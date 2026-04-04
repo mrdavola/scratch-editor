@@ -1,4 +1,5 @@
 import {applyMiddleware, compose, combineReducers} from 'redux';
+import aiStateReducer, {aiStateInitialState} from './ai-state';
 import alertsReducer, {alertsInitialState} from './alerts';
 import assetDragReducer, {assetDragInitialState} from './asset-drag';
 import cardsReducer, {cardsInitialState} from './cards';
@@ -38,6 +39,7 @@ import {GUIConfig} from '../gui-config';
 const guiMiddleware = compose(applyMiddleware(throttle(300, {leading: true, trailing: true})));
 
 const buildInitialState = (config: GUIConfig) => ({
+    aiState: aiStateInitialState,
     alerts: alertsInitialState,
     assetDrag: assetDragInitialState,
     blockDrag: blockDragInitialState,
@@ -148,6 +150,7 @@ const configReducer = function (state?: GUIConfig | null) {
 };
 
 const guiReducer = combineReducers({
+    aiState: aiStateReducer,
     alerts: alertsReducer,
     assetDrag: assetDragReducer,
     blockDrag: blockDragReducer,
