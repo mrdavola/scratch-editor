@@ -33,18 +33,23 @@ export const injectGeneratedBlocks = (vm, generatedResult) => {
         }
     }
 
-    // Step 2: Map variable IDs
-    const updatedBlocks = mapVariableIds(blocks, target);
+    // Step 2: Convert fields from array format to object format
+    // AI returns fields as ["value", null] (sb3 JSON format)
+    // but the VM runtime expects {name, value, id} objects
+    const deserializedBlocks = deserializeBlockFields(blocks);
 
-    // Step 3: Inject blocks
+    // Step 3: Map variable IDs
+    const updatedBlocks = mapVariableIds(deserializedBlocks, target);
+
+    // Step 4: Inject blocks
     for (const [blockId, blockData] of Object.entries(updatedBlocks)) {
         target.blocks.createBlock({ id: blockId, ...blockData });
     }
 
-    // Step 4: Update workspace
+    // Step 5: Update workspace
     vm.emitWorkspaceUpdate();
 
-    // Step 5: Trigger glow effect
+    // Step 6: Trigger glow effect
     const topLevelIds = Object.entries(updatedBlocks)
         .filter(([_, b]) => b.topLevel)
         .map(([id, _]) => id);
@@ -57,6 +62,39 @@ export const injectGeneratedBlocks = (vm, generatedResult) => {
 
     return true;
 };
+
+/**
+ * Convert fields from sb3 array format to VM object format.
+ * AI generates: { KEY_OPTION: ["space", null] }
+ * VM expects:   { KEY_OPTION: { name: "KEY_OPTION", value: "space", id: null } }
+ */
+function deserializeBlockFields(blocks) {
+    const result = JSON.parse(JSON.stringify(blocks));
+    for (const block of Object.values(result)) {
+        if (!block.fields) continue;
+        for (const fieldName in block.fields) {
+            const fieldValue = block.fields[fieldName];
+            if (Array.isArray(fieldValue)) {
+                block.fields[fieldName] = {
+                    name: fieldName,
+                    value: fieldValue[0]
+                };
+                if (fieldValue.length > 1 && fieldValue[1] !== null) {
+                    block.fields[fieldName].id = fieldValue[1];
+                }
+                // Set variableType for special fields
+                if (fieldName === 'BROADCAST_OPTION') {
+                    block.fields[fieldName].variableType = 'broadcast_msg';
+                } else if (fieldName === 'VARIABLE') {
+                    block.fields[fieldName].variableType = '';
+                } else if (fieldName === 'LIST') {
+                    block.fields[fieldName].variableType = 'list';
+                }
+            }
+        }
+    }
+    return result;
+}
 
 function mapVariableIds(blocks, target) {
     const varLookup = {};
@@ -73,14 +111,15 @@ function mapVariableIds(blocks, target) {
         }
     }
 
+    // Blocks are already deserialized — fields are {name, value, id} objects
     const updated = JSON.parse(JSON.stringify(blocks));
     for (const block of Object.values(updated)) {
         if (block.fields) {
-            for (const [fieldName, fieldValue] of Object.entries(block.fields)) {
+            for (const [fieldName, fieldObj] of Object.entries(block.fields)) {
                 if (fieldName === 'VARIABLE' || fieldName === 'LIST') {
-                    const varName = fieldValue[0];
+                    const varName = fieldObj.value;
                     if (varLookup[varName]) {
-                        fieldValue[1] = varLookup[varName];
+                        fieldObj.id = varLookup[varName];
                     }
                 }
             }
