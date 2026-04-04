@@ -129,9 +129,13 @@ class AIAssetGenerator extends React.Component {
         const isSound = type === 'sound';
 
         return (
+            {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
             <div
                 className={styles.modalOverlay}
                 onClick={this.handleOverlayClick}
+                onKeyDown={e => e.stopPropagation()}
+                onKeyUp={e => e.stopPropagation()}
+                onKeyPress={e => e.stopPropagation()}
             >
                 <div className={styles.modalContent}>
                     <div className={styles.modalHeader}>
