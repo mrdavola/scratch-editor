@@ -486,8 +486,8 @@ const GUIComponent = props => {
                                             vm={vm}
                                             colorMode={colorMode}
                                         />
+                                        <AIInput vm={vm} />
                                     </Box>
-                                    <AIInput vm={vm} />
                                     <ExtensionsButton
                                         intl={intl}
                                         onExtensionButtonClick={onExtensionButtonClick}

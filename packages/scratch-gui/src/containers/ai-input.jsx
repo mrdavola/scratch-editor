@@ -20,6 +20,7 @@ class AIInput extends React.Component {
     constructor (props) {
         super(props);
         bindAll(this, [
+            'handleDismissExplanation',
             'handleInputChange',
             'handleSubmit'
         ]);
@@ -27,6 +28,9 @@ class AIInput extends React.Component {
             inputValue: '',
             explanation: null
         };
+    }
+    handleDismissExplanation () {
+        this.setState({explanation: null});
     }
     handleInputChange (e) {
         this.setState({inputValue: e.target.value});
@@ -86,6 +90,7 @@ class AIInput extends React.Component {
                 explanation={this.state.explanation}
                 inputValue={this.state.inputValue}
                 loading={loading}
+                onDismissExplanation={this.handleDismissExplanation}
                 onInputChange={this.handleInputChange}
                 onSubmit={this.handleSubmit}
             />

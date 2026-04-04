@@ -9,6 +9,7 @@ const AIInputComponent = props => {
         explanation,
         inputValue,
         loading,
+        onDismissExplanation,
         onInputChange,
         onSubmit
     } = props;
@@ -21,6 +22,25 @@ const AIInputComponent = props => {
 
     return (
         <div className={styles.aiInputWrapper}>
+            {explanation ? (
+                <div className={styles.aiExplanation}>
+                    {explanation}
+                    <button
+                        className={styles.aiDismiss}
+                        onClick={onDismissExplanation}
+                    >
+                        {'\u2715'}
+                    </button>
+                </div>
+            ) : null}
+            {error ? (
+                <div className={styles.aiError}>
+                    {error}
+                </div>
+            ) : null}
+            {loading ? (
+                <div className={styles.aiLoadingBar} />
+            ) : null}
             <div className={styles.aiInputRow}>
                 <input
                     className={styles.aiInputField}
@@ -39,19 +59,6 @@ const AIInputComponent = props => {
                     {'\u2728'}
                 </button>
             </div>
-            {loading ? (
-                <div className={styles.aiLoadingBar} />
-            ) : null}
-            {error ? (
-                <div className={styles.aiError}>
-                    {error}
-                </div>
-            ) : null}
-            {explanation ? (
-                <div className={styles.aiExplanation}>
-                    {explanation}
-                </div>
-            ) : null}
         </div>
     );
 };
@@ -61,6 +68,7 @@ AIInputComponent.propTypes = {
     explanation: PropTypes.string,
     inputValue: PropTypes.string,
     loading: PropTypes.bool,
+    onDismissExplanation: PropTypes.func,
     onInputChange: PropTypes.func.isRequired,
     onSubmit: PropTypes.func.isRequired
 };
@@ -69,7 +77,8 @@ AIInputComponent.defaultProps = {
     error: null,
     explanation: null,
     inputValue: '',
-    loading: false
+    loading: false,
+    onDismissExplanation: () => {}
 };
 
 export default AIInputComponent;

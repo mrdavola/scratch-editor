@@ -2,12 +2,16 @@
 @import "../../css/colors.css";
 
 .ai-input-wrapper {
+    position: absolute;
+    bottom: 3.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
+    max-width: 480px;
+    z-index: 50;
     display: flex;
     flex-direction: column;
-    padding: calc($space / 2) $space;
-    background-color: hsla(263, 70%, 96%, 1); /* #EDE9FE */
-    border-top: 1px solid hsla(263, 50%, 85%, 1);
-    flex-shrink: 0;
+    gap: calc($space / 2);
 }
 
 .ai-input-row {
@@ -15,25 +19,22 @@
     flex-direction: row;
     align-items: center;
     gap: calc($space / 2);
+    background-color: $ui-white;
+    border-radius: calc($space * 2.5);
+    box-shadow: 0 2px 12px hsla(0, 0%, 0%, 0.15), 0 0 0 1px hsla(263, 50%, 85%, 0.5);
+    padding: 4px 4px 4px calc($space * 1.5);
 }
 
 .ai-input-field {
     flex-grow: 1;
     height: 2rem;
-    padding: 0 calc($space * 1.5);
-    border: 1px solid hsla(263, 50%, 85%, 1);
-    border-radius: calc($space * 2.5);
-    font-size: 0.75rem;
+    padding: 0;
+    border: none;
+    font-size: 0.8125rem;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     outline: none;
-    transition: border-color 0.15s ease;
-    background-color: $ui-white;
+    background: transparent;
     color: $text-primary;
-}
-
-.ai-input-field:focus {
-    border-color: hsla(263, 70%, 58%, 1); /* #7C3AED */
-    box-shadow: 0 0 0 2px hsla(263, 70%, 58%, 0.2);
 }
 
 .ai-input-field:disabled {
@@ -48,18 +49,18 @@
 .ai-submit-button {
     height: 2rem;
     min-width: 2rem;
-    padding: 0 calc($space * 1.5);
+    padding: 0;
     border: none;
-    border-radius: calc($space * 2.5);
+    border-radius: 50%;
     background-color: hsla(263, 70%, 58%, 1); /* #7C3AED */
     color: $ui-white;
-    font-size: 0.75rem;
-    font-weight: bold;
+    font-size: 0.875rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: background-color 0.15s ease;
+    flex-shrink: 0;
 }
 
 .ai-submit-button:hover:not(:disabled) {
@@ -67,13 +68,12 @@
 }
 
 .ai-submit-button:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
 .ai-loading-bar {
     height: 3px;
-    margin-top: calc($space / 2);
     border-radius: 2px;
     background: linear-gradient(
         90deg,
@@ -95,22 +95,44 @@
 }
 
 .ai-error {
-    margin-top: calc($space / 2);
     padding: calc($space / 2) $space;
     background-color: hsla(0, 80%, 95%, 1);
     border: 1px solid hsla(0, 70%, 80%, 1);
     border-radius: $form-radius;
     color: hsla(0, 70%, 45%, 1);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    box-shadow: 0 2px 8px hsla(0, 0%, 0%, 0.1);
 }
 
 .ai-explanation {
-    margin-top: calc($space / 2);
     padding: calc($space / 2) $space;
+    padding-right: calc($space * 2.5);
     background-color: hsla(263, 70%, 97%, 1);
     border: 1px solid hsla(263, 50%, 90%, 1);
     border-radius: $form-radius;
     color: $text-primary;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     line-height: 1.4;
+    word-wrap: break-word;
+    position: relative;
+    box-shadow: 0 2px 8px hsla(0, 0%, 0%, 0.1);
+}
+
+.ai-dismiss {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: $text-primary-transparent;
+    padding: 2px 4px;
+    line-height: 1;
+}
+
+.ai-dismiss:hover {
+    color: $text-primary;
 }
