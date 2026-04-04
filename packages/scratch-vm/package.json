@@ -20,7 +20,12 @@
       "node": "./dist/node/scratch-vm.js",
       "default": "./src/index.js"
     },
-    "./src/extension-support/block-type": "./src/extension-support/block-type"
+    "./src/extension-support/block-type": "./src/extension-support/block-type",
+    "./src/serialization/sb3": {
+      "webpack": "./src/serialization/sb3.js",
+      "require": "./src/serialization/sb3.js",
+      "default": "./src/serialization/sb3.js"
+    }
   },
   "main": "./dist/node/scratch-vm.js",
   "browser": "./dist/web/scratch-vm.js",
