@@ -141,6 +141,11 @@
     gap: calc($space / 2);
 }
 
+.generate-button svg {
+    width: 1rem;
+    height: 1rem;
+}
+
 .generate-button:hover:not(:disabled) {
     background-color: hsla(263, 70%, 50%, 1);
 }
