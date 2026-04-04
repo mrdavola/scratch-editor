@@ -23,6 +23,7 @@ import BackdropLibrary from '../../containers/backdrop-library.jsx';
 import Watermark from '../../containers/watermark.jsx';
 
 import AIInput from '../../containers/ai-input.jsx';
+import RemixSuggestions from '../../containers/remix-suggestions.jsx';
 import Backpack from '../../containers/backpack.jsx';
 import ExtensionsButton from '../extension-button/extension-button.jsx';
 import WebGlModal from '../../containers/webgl-modal.jsx';
@@ -552,6 +553,7 @@ const GUIComponent = props => {
                                 username={username}
                                 onUpdateProjectThumbnail={onUpdateProjectThumbnail}
                             />
+                            <RemixSuggestions vm={vm} />
                             <Box
                                 className={styles.targetWrapper}
                                 role="region"
