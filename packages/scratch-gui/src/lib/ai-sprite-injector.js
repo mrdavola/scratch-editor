@@ -1,74 +1,62 @@
 /**
  * Adds an AI-generated sprite to the project.
+ * Uses the same costumeUpload flow as file uploads to ensure
+ * the bitmap is properly processed and cached in storage.
  */
+import {BitmapAdapter} from '@scratch/scratch-svg-renderer';
+
 export const addAISprite = async (vm, base64PNG, name) => {
+    const storage = vm.runtime.storage;
+
+    // Decode base64 to binary
     const binaryString = atob(base64PNG);
     const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i);
     }
 
-    const storage = vm.runtime.storage;
+    // Use BitmapAdapter to properly process the image (same as file upload flow)
+    const bitmapAdapter = new BitmapAdapter();
+    const dataBuffer = await bitmapAdapter.importBitmap(bytes.buffer, 'image/png');
+
+    // Create a storage asset
     const asset = storage.createAsset(
         storage.AssetType.ImageBitmap,
         storage.DataFormat.PNG,
-        bytes.buffer,
+        dataBuffer,
         null,
         true
     );
 
-    const costumeAsset = {
-        assetId: asset.assetId,
+    // Build costume with the asset reference (critical for rendering)
+    const vmCostume = {
         name: 'costume1',
-        bitmapResolution: 2,
-        dataFormat: 'png',
-        md5ext: `${asset.assetId}.png`,
-        rotationCenterX: 0,
-        rotationCenterY: 0
+        dataFormat: storage.DataFormat.PNG,
+        asset: asset,
+        md5: `${asset.assetId}.${storage.DataFormat.PNG}`,
+        assetId: asset.assetId
     };
 
+    // Build sprite JSON with the costume
     const spriteJSON = {
         name: ensureUniqueName(vm, name),
         isStage: false,
-        variables: {},
-        lists: {},
-        broadcasts: {},
-        blocks: {},
-        comments: {},
-        currentCostume: 0,
-        costumes: [costumeAsset],
-        sounds: [],
-        volume: 100,
-        layerOrder: vm.runtime.targets.length,
-        visible: true,
         x: 0,
         y: 0,
+        visible: true,
         size: 100,
+        rotationStyle: 'all around',
         direction: 90,
         draggable: false,
-        rotationStyle: 'all around'
+        currentCostume: 0,
+        blocks: {},
+        variables: {},
+        costumes: [vmCostume],
+        sounds: []
     };
 
-    // Calculate rotation center from image dimensions
-    const img = new Image();
-    const blob = new Blob([bytes], {type: 'image/png'});
-    const url = URL.createObjectURL(blob);
-
-    return new Promise(resolve => {
-        img.onload = () => {
-            costumeAsset.rotationCenterX = Math.floor(img.width / 2);
-            costumeAsset.rotationCenterY = Math.floor(img.height / 2);
-            URL.revokeObjectURL(url);
-            vm.addSprite(JSON.stringify(spriteJSON)).then(() => {
-                resolve(true);
-            }).catch(() => resolve(false));
-        };
-        img.onerror = () => {
-            URL.revokeObjectURL(url);
-            resolve(false);
-        };
-        img.src = url;
-    });
+    await vm.addSprite(spriteJSON);
+    return true;
 };
 
 function ensureUniqueName (vm, name) {
