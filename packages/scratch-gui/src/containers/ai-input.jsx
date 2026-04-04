@@ -8,6 +8,7 @@ import AIInputComponent from '../components/ai-input/ai-input.jsx';
 import {extractProjectContext} from '../lib/ai-context.js';
 import {generateBlocks} from '../lib/ai-api-client.js';
 import {injectGeneratedBlocks} from '../lib/ai-block-injector.js';
+import {startVoiceInput, isVoiceSupported} from '../lib/voice-input.js';
 import {
     setAILoading,
     setAIResult,
@@ -22,14 +23,18 @@ class AIInput extends React.Component {
             'handleClose',
             'handleDismissExplanation',
             'handleInputChange',
+            'handleMicClick',
             'handleOpen',
-            'handleSubmit'
+            'handleSubmit',
+            'handleSetInputValue'
         ]);
         this.state = {
             inputValue: '',
             explanation: null,
-            isOpen: false
+            isOpen: false,
+            isListening: false
         };
+        this._recognition = null;
     }
     handleClose () {
         this.setState({isOpen: false});
@@ -40,8 +45,32 @@ class AIInput extends React.Component {
     handleInputChange (e) {
         this.setState({inputValue: e.target.value});
     }
+    handleMicClick () {
+        if (this.state.isListening) {
+            if (this._recognition) {
+                this._recognition.abort();
+                this._recognition = null;
+            }
+            this.setState({isListening: false});
+            return;
+        }
+        this.setState({isListening: true});
+        this._recognition = startVoiceInput(
+            transcript => {
+                this.setState({inputValue: transcript, isListening: false});
+                this._recognition = null;
+            },
+            () => {
+                this.setState({isListening: false});
+                this._recognition = null;
+            }
+        );
+    }
     handleOpen () {
         this.setState({isOpen: true});
+    }
+    handleSetInputValue (value) {
+        this.setState({inputValue: value, isOpen: true});
     }
     handleSubmit () {
         const prompt = this.state.inputValue.trim();
@@ -89,13 +118,16 @@ class AIInput extends React.Component {
                 error={this.props.error}
                 explanation={this.state.explanation}
                 inputValue={this.state.inputValue}
+                isListening={this.state.isListening}
                 isOpen={this.state.isOpen}
                 loading={this.props.loading}
                 onClose={this.handleClose}
                 onDismissExplanation={this.handleDismissExplanation}
                 onInputChange={this.handleInputChange}
+                onMicClick={this.handleMicClick}
                 onOpen={this.handleOpen}
                 onSubmit={this.handleSubmit}
+                voiceSupported={isVoiceSupported()}
             />
         );
     }
