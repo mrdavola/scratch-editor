@@ -12,7 +12,6 @@ import {
     setAILoading,
     setAIResult,
     setAIError,
-    clearAIState,
     addConversationMessage
 } from '../reducers/ai-state';
 
@@ -20,20 +19,29 @@ class AIInput extends React.Component {
     constructor (props) {
         super(props);
         bindAll(this, [
+            'handleClose',
             'handleDismissExplanation',
             'handleInputChange',
+            'handleOpen',
             'handleSubmit'
         ]);
         this.state = {
             inputValue: '',
-            explanation: null
+            explanation: null,
+            isOpen: false
         };
+    }
+    handleClose () {
+        this.setState({isOpen: false});
     }
     handleDismissExplanation () {
         this.setState({explanation: null});
     }
     handleInputChange (e) {
         this.setState({inputValue: e.target.value});
+    }
+    handleOpen () {
+        this.setState({isOpen: true});
     }
     handleSubmit () {
         const prompt = this.state.inputValue.trim();
@@ -49,49 +57,44 @@ class AIInput extends React.Component {
 
         generateBlocks(prompt, context, this.props.conversationHistory)
             .then(result => {
-                const success = injectGeneratedBlocks(this.props.vm, result);
-                if (success) {
-                    this.props.onSetResult(result);
-                    this.props.onAddMessage({
-                        role: 'assistant',
-                        content: result.explanation || 'Blocks generated.'
-                    });
-                    this.setState({
-                        inputValue: '',
-                        explanation: result.explanation || null
-                    });
+                if (result.success) {
+                    const success = injectGeneratedBlocks(this.props.vm, result);
+                    if (success) {
+                        this.props.onSetResult(result);
+                        this.props.onAddMessage({
+                            role: 'assistant',
+                            content: result.explanation || 'Blocks generated.'
+                        });
+                        this.setState({
+                            inputValue: '',
+                            explanation: result.explanation || null
+                        });
+                    } else {
+                        this.props.onSetError('Failed to inject blocks into workspace.');
+                    }
                 } else {
-                    this.props.onSetError('Failed to inject blocks into workspace.');
+                    this.props.onSetError(result.message || 'Something went wrong.');
                 }
             })
             .catch(err => {
                 this.props.onSetError(err.message || 'Something went wrong.');
+            })
+            .finally(() => {
+                this.props.onSetLoading(false);
             });
     }
     render () {
-        const {
-            /* eslint-disable no-unused-vars */
-            vm,
-            loading,
-            error,
-            conversationHistory,
-            onSetLoading,
-            onSetResult,
-            onSetError,
-            onClearError,
-            onAddMessage,
-            /* eslint-enable no-unused-vars */
-            ...props
-        } = this.props;
         return (
             <AIInputComponent
-                {...props}
-                error={error}
+                error={this.props.error}
                 explanation={this.state.explanation}
                 inputValue={this.state.inputValue}
-                loading={loading}
+                isOpen={this.state.isOpen}
+                loading={this.props.loading}
+                onClose={this.handleClose}
                 onDismissExplanation={this.handleDismissExplanation}
                 onInputChange={this.handleInputChange}
+                onOpen={this.handleOpen}
                 onSubmit={this.handleSubmit}
             />
         );
