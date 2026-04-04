@@ -13,6 +13,11 @@ import addSoundFromRecordingIcon from '../components/asset-panel/icon--add-sound
 import fileUploadIcon from '../components/action-menu/icon--file-upload.svg';
 import surpriseIcon from '../components/action-menu/icon--surprise.svg';
 import searchIcon from '../components/action-menu/icon--search.svg';
+import aiIcon from '../components/action-menu/icon--ai.svg';
+
+import AIAssetGenerator from '../components/ai-asset-generator/ai-asset-generator.jsx';
+import {generateSound} from '../lib/ai-api-client.js';
+import {addAISound} from '../lib/ai-sound-injector.js';
 
 import RecordModal from './record-modal.jsx';
 import SoundEditor from './sound-editor.jsx';
@@ -57,11 +62,15 @@ class SoundTab extends React.Component {
             'handleFileUploadClick',
             'handleSoundUpload',
             'handleNewSoundFromLibraryClick',
+            'handleAISoundClick',
+            'handleAISoundGenerate',
+            'handleAISoundAdd',
+            'handleAISoundClose',
             'handleDrop',
             'setFileInput',
             'mergeDynamicAssets'
         ]);
-        this.state = {selectedSoundIndex: 0};
+        this.state = {selectedSoundIndex: 0, aiSoundModalVisible: false};
         this.processedSounds = {};
     }
 
@@ -156,6 +165,21 @@ class SoundTab extends React.Component {
         this.props.onNewSoundFromLibraryClick(e);
     }
 
+    handleAISoundClick () {
+        this.setState({aiSoundModalVisible: true});
+    }
+    handleAISoundGenerate (description, soundType) {
+        return generateSound(description, soundType);
+    }
+    handleAISoundAdd (base64WAV, description) {
+        const name = description.split(' ').slice(0, 3).join(' ') || 'AI Sound';
+        addAISound(this.props.vm, base64WAV, name).then(() => {
+            this.handleNewSound();
+        });
+    }
+    handleAISoundClose () {
+        this.setState({aiSoundModalVisible: false});
+    }
     handleSoundUpload (e) {
         const storage = this.props.vm.runtime.storage;
         const targetId = this.props.vm.editingTarget.id;
@@ -246,10 +270,16 @@ class SoundTab extends React.Component {
                 defaultMessage: 'Choose a Sound',
                 description: 'Button to add a sound in the editor tab',
                 id: 'gui.soundTab.addSoundFromLibrary'
+            },
+            addAISound: {
+                defaultMessage: 'AI Generate',
+                description: 'Button to add an AI-generated sound in the editor tab',
+                id: 'gui.soundTab.addAISound'
             }
         });
 
         return (
+            <React.Fragment>
             <AssetPanel
                 ariaLabel={ariaLabel}
                 ariaRole={ariaRole}
@@ -257,6 +287,10 @@ class SoundTab extends React.Component {
                     title: intl.formatMessage(messages.addSound),
                     img: addSoundFromLibraryIcon,
                     onClick: this.handleNewSoundFromLibraryClick
+                }, {
+                    title: intl.formatMessage(messages.addAISound),
+                    img: aiIcon,
+                    onClick: this.handleAISoundClick
                 }, {
                     title: intl.formatMessage(messages.fileUploadSound),
                     img: fileUploadIcon,
@@ -304,6 +338,16 @@ class SoundTab extends React.Component {
                     />
                 ) : null}
             </AssetPanel>
+            {this.state.aiSoundModalVisible ? (
+                <AIAssetGenerator
+                    title="AI Sound Generator"
+                    type="sound"
+                    onGenerate={this.handleAISoundGenerate}
+                    onAdd={this.handleAISoundAdd}
+                    onClose={this.handleAISoundClose}
+                />
+            ) : null}
+            </React.Fragment>
         );
     }
 }

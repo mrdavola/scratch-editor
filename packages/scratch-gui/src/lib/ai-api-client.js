@@ -50,3 +50,7 @@ export async function explainBlocks(blocks, gradeLevel, spriteNames) {
 export async function debugBlocks(problemDescription, context) {
     return apiCall('debug-blocks', { problemDescription, context });
 }
+
+export async function suggestRemix(context) {
+    return apiCall('suggest-remix', { context });
+}

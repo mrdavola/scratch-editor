@@ -24,10 +24,16 @@ const STYLE_OPTIONS = [
     {value: 'hand-drawn', label: 'Hand-drawn'}
 ];
 
+const SOUND_TYPE_OPTIONS = [
+    {value: 'effect', label: 'Sound Effect'},
+    {value: 'music', label: 'Music'}
+];
+
 const PLACEHOLDERS = {
     sprite: 'A friendly orange cat wearing a top hat...',
     backdrop: 'A colorful underwater coral reef scene...',
-    costume: 'The character jumping with arms raised...'
+    costume: 'The character jumping with arms raised...',
+    sound: 'A laser beam shooting sound effect...'
 };
 
 class AIAssetGenerator extends React.Component {
@@ -36,6 +42,7 @@ class AIAssetGenerator extends React.Component {
         bindAll(this, [
             'handleDescriptionChange',
             'handleStyleChange',
+            'handleSoundTypeChange',
             'handleGenerate',
             'handleAdd',
             'handleRetry',
@@ -45,9 +52,10 @@ class AIAssetGenerator extends React.Component {
         this.state = {
             description: '',
             style: 'cartoon',
+            soundType: 'effect',
             loading: false,
             error: null,
-            previewData: null // base64 PNG data
+            previewData: null // base64 PNG or WAV data
         };
     }
     handleDescriptionChange (e) {
@@ -56,24 +64,33 @@ class AIAssetGenerator extends React.Component {
     handleStyleChange (e) {
         this.setState({style: e.target.value});
     }
+    handleSoundTypeChange (e) {
+        this.setState({soundType: e.target.value});
+    }
     handleGenerate () {
-        const {description, style} = this.state;
+        const {description, style, soundType} = this.state;
+        const {type} = this.props;
         if (!description.trim()) return;
 
         this.setState({loading: true, error: null, previewData: null});
 
-        this.props.onGenerate(description.trim(), style)
+        const isSound = type === 'sound';
+        const generateArg = isSound ? soundType : style;
+
+        this.props.onGenerate(description.trim(), generateArg)
             .then(result => {
-                if (result && result.image) {
+                const data = isSound ? result && result.audio : result && result.image;
+                if (data) {
                     this.setState({
                         loading: false,
-                        previewData: result.image,
+                        previewData: data,
                         error: null
                     });
                 } else {
+                    const noun = isSound ? 'audio' : 'image';
                     this.setState({
                         loading: false,
-                        error: 'No image was returned. Please try again.'
+                        error: `No ${noun} was returned. Please try again.`
                     });
                 }
             })
@@ -108,7 +125,8 @@ class AIAssetGenerator extends React.Component {
     }
     render () {
         const {title, type, onClose} = this.props;
-        const {description, style, loading, error, previewData} = this.state;
+        const {description, style, soundType, loading, error, previewData} = this.state;
+        const isSound = type === 'sound';
 
         return (
             <div
@@ -141,11 +159,19 @@ class AIAssetGenerator extends React.Component {
                         ) : previewData ? (
                             <div className={styles.previewContainer}>
                                 <div className={styles.previewImageWrapper}>
-                                    <img
-                                        className={styles.previewImage}
-                                        src={`data:image/png;base64,${previewData}`}
-                                        alt={`AI generated ${type}`}
-                                    />
+                                    {isSound ? (
+                                        <audio
+                                            className={styles.previewAudio}
+                                            controls
+                                            src={`data:audio/wav;base64,${previewData}`}
+                                        />
+                                    ) : (
+                                        <img
+                                            className={styles.previewImage}
+                                            src={`data:image/png;base64,${previewData}`}
+                                            alt={`AI generated ${type}`}
+                                        />
+                                    )}
                                 </div>
                                 <div className={styles.previewActions}>
                                     <button
@@ -180,22 +206,39 @@ class AIAssetGenerator extends React.Component {
                                 </div>
                                 <div className={styles.formGroup}>
                                     <label className={styles.formLabel}>
-                                        {'Style'}
+                                        {isSound ? 'Type' : 'Style'}
                                     </label>
-                                    <select
-                                        className={styles.styleSelect}
-                                        value={style}
-                                        onChange={this.handleStyleChange}
-                                    >
-                                        {STYLE_OPTIONS.map(opt => (
-                                            <option
-                                                key={opt.value}
-                                                value={opt.value}
-                                            >
-                                                {opt.label}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    {isSound ? (
+                                        <select
+                                            className={styles.styleSelect}
+                                            value={soundType}
+                                            onChange={this.handleSoundTypeChange}
+                                        >
+                                            {SOUND_TYPE_OPTIONS.map(opt => (
+                                                <option
+                                                    key={opt.value}
+                                                    value={opt.value}
+                                                >
+                                                    {opt.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <select
+                                            className={styles.styleSelect}
+                                            value={style}
+                                            onChange={this.handleStyleChange}
+                                        >
+                                            {STYLE_OPTIONS.map(opt => (
+                                                <option
+                                                    key={opt.value}
+                                                    value={opt.value}
+                                                >
+                                                    {opt.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
                                 </div>
                                 {error ? (
                                     <div className={styles.errorMessage}>
@@ -224,7 +267,7 @@ AIAssetGenerator.propTypes = {
     onClose: PropTypes.func.isRequired,
     onGenerate: PropTypes.func.isRequired,
     title: PropTypes.string.isRequired,
-    type: PropTypes.oneOf(['sprite', 'backdrop', 'costume']).isRequired
+    type: PropTypes.oneOf(['sprite', 'backdrop', 'costume', 'sound']).isRequired
 };
 
 export default AIAssetGenerator;

@@ -205,6 +205,11 @@
     image-rendering: pixelated;
 }
 
+.preview-audio {
+    width: 100%;
+    outline: none;
+}
+
 .preview-actions {
     display: flex;
     gap: $space;
