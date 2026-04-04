@@ -1,0 +1,116 @@
+@import "../../css/units.css";
+@import "../../css/colors.css";
+
+.ai-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    padding: calc($space / 2) $space;
+    background-color: hsla(263, 70%, 96%, 1); /* #EDE9FE */
+    border-top: 1px solid hsla(263, 50%, 85%, 1);
+    flex-shrink: 0;
+}
+
+.ai-input-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: calc($space / 2);
+}
+
+.ai-input-field {
+    flex-grow: 1;
+    height: 2rem;
+    padding: 0 calc($space * 1.5);
+    border: 1px solid hsla(263, 50%, 85%, 1);
+    border-radius: calc($space * 2.5);
+    font-size: 0.75rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    outline: none;
+    transition: border-color 0.15s ease;
+    background-color: $ui-white;
+    color: $text-primary;
+}
+
+.ai-input-field:focus {
+    border-color: hsla(263, 70%, 58%, 1); /* #7C3AED */
+    box-shadow: 0 0 0 2px hsla(263, 70%, 58%, 0.2);
+}
+
+.ai-input-field:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ai-input-field::placeholder {
+    color: $text-primary-transparent;
+}
+
+.ai-submit-button {
+    height: 2rem;
+    min-width: 2rem;
+    padding: 0 calc($space * 1.5);
+    border: none;
+    border-radius: calc($space * 2.5);
+    background-color: hsla(263, 70%, 58%, 1); /* #7C3AED */
+    color: $ui-white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease;
+}
+
+.ai-submit-button:hover:not(:disabled) {
+    background-color: hsla(263, 70%, 50%, 1);
+}
+
+.ai-submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ai-loading-bar {
+    height: 3px;
+    margin-top: calc($space / 2);
+    border-radius: 2px;
+    background: linear-gradient(
+        90deg,
+        hsla(263, 70%, 90%, 1),
+        hsla(263, 70%, 58%, 1),
+        hsla(263, 70%, 90%, 1)
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.ai-error {
+    margin-top: calc($space / 2);
+    padding: calc($space / 2) $space;
+    background-color: hsla(0, 80%, 95%, 1);
+    border: 1px solid hsla(0, 70%, 80%, 1);
+    border-radius: $form-radius;
+    color: hsla(0, 70%, 45%, 1);
+    font-size: 0.6875rem;
+}
+
+.ai-explanation {
+    margin-top: calc($space / 2);
+    padding: calc($space / 2) $space;
+    background-color: hsla(263, 70%, 97%, 1);
+    border: 1px solid hsla(263, 50%, 90%, 1);
+    border-radius: $form-radius;
+    color: $text-primary;
+    font-size: 0.6875rem;
+    line-height: 1.4;
+}
