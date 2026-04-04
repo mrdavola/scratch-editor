@@ -16,6 +16,7 @@ import paintIcon from '../action-menu/icon--paint.svg';
 import spriteIcon from '../action-menu/icon--sprite.svg';
 import surpriseIcon from '../action-menu/icon--surprise.svg';
 import searchIcon from '../action-menu/icon--search.svg';
+import aiIcon from '../action-menu/icon--ai.svg';
 
 const messages = defineMessages({
     addSpriteFromLibrary: {
@@ -37,6 +38,11 @@ const messages = defineMessages({
         id: 'gui.spriteSelector.addSpriteFromFile',
         description: 'Button to add a sprite in the target pane from file',
         defaultMessage: 'Upload Sprite'
+    },
+    addSpriteFromAI: {
+        id: 'gui.spriteSelector.addSpriteFromAI',
+        description: 'Button to add an AI-generated sprite in the target pane',
+        defaultMessage: 'AI Generate'
     }
 });
 
@@ -55,6 +61,7 @@ const SpriteSelectorComponent = function (props) {
         onDeleteSprite,
         onDuplicateSprite,
         onExportSprite,
+        onAISpriteClick,
         onFileUploadClick,
         onNewSpriteClick,
         onPaintSpriteClick,
@@ -125,6 +132,10 @@ const SpriteSelectorComponent = function (props) {
                         fileInput: spriteFileInput,
                         fileMultiple: true
                     }, {
+                        title: intl.formatMessage(messages.addSpriteFromAI),
+                        img: aiIcon,
+                        onClick: onAISpriteClick
+                    }, {
                         title: intl.formatMessage(messages.addSpriteFromSurprise),
                         img: surpriseIcon,
                         onClick: onSurpriseSpriteClick // TODO need real function for this
@@ -148,6 +159,7 @@ const SpriteSelectorComponent = function (props) {
 
 SpriteSelectorComponent.propTypes = {
     editingTarget: PropTypes.string,
+    onAISpriteClick: PropTypes.func,
     hoveredTarget: PropTypes.shape({
         hoveredSprite: PropTypes.string,
         receivedBlocks: PropTypes.bool

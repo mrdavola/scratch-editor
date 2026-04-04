@@ -20,6 +20,9 @@ import {fetchCode} from '../lib/backpack-api';
 import {getEventXY} from '../lib/touch-utils';
 
 import StageSelectorComponent from '../components/stage-selector/stage-selector.jsx';
+import AIAssetGenerator from '../components/ai-asset-generator/ai-asset-generator.jsx';
+import {generateBackdrop} from '../lib/ai-api-client.js';
+import {addAIBackdrop} from '../lib/ai-backdrop-injector.js';
 
 import backdropLibraryContent from '../lib/libraries/backdrops.json';
 import {handleFileUpload, costumeUpload} from '../lib/file-uploader.js';
@@ -56,11 +59,18 @@ class StageSelector extends React.Component {
             'handleMouseLeave',
             'handleTouchEnd',
             'handleDrop',
+            'handleAIBackdropClick',
+            'handleAIBackdropGenerate',
+            'handleAIBackdropAdd',
+            'handleAIBackdropClose',
             'setFileInput',
             'setRef',
             'mergeDynamicAssets'
         ]);
 
+        this.state = {
+            aiBackdropModalVisible: false
+        };
         this.processedBackdrops = {};
     }
     componentDidMount () {
@@ -99,6 +109,20 @@ class StageSelector extends React.Component {
             skinId: null
         };
         this.handleNewBackdrop(vmBackdrop, shouldActivateTab);
+    }
+    handleAIBackdropClick (e) {
+        e.stopPropagation();
+        this.setState({aiBackdropModalVisible: true});
+    }
+    handleAIBackdropGenerate (description, style) {
+        return generateBackdrop(description, style);
+    }
+    handleAIBackdropAdd (base64PNG, description) {
+        const name = description.split(' ').slice(0, 3).join(' ') || 'AI Backdrop';
+        addAIBackdrop(this.props.vm, base64PNG, name);
+    }
+    handleAIBackdropClose () {
+        this.setState({aiBackdropModalVisible: false});
     }
     handleClick () {
         this.props.onSelect(this.props.id);
@@ -193,20 +217,32 @@ class StageSelector extends React.Component {
             'asset', 'dispatchSetHoveredSprite', 'id', 'intl', 'onNewBackdropClick',
             'onActivateTab', 'onSelect', 'onShowImporting', 'onCloseImporting']);
         return (
-            <DroppableThrottledStage
-                componentRef={this.setRef}
-                fileInputRef={this.setFileInput}
-                onBackdropFileUpload={this.handleBackdropUpload}
-                onBackdropFileUploadClick={this.handleFileUploadClick}
-                onClick={this.handleClick}
-                onDrop={this.handleDrop}
-                onEmptyBackdropClick={this.handleEmptyBackdrop}
-                onMouseEnter={this.handleMouseEnter}
-                onMouseLeave={this.handleMouseLeave}
-                onSurpriseBackdropClick={this.handleSurpriseBackdrop}
-                onNewBackdropClick={this.handleNewBackdropClick}
-                {...componentProps}
-            />
+            <React.Fragment>
+                <DroppableThrottledStage
+                    componentRef={this.setRef}
+                    fileInputRef={this.setFileInput}
+                    onAIBackdropClick={this.handleAIBackdropClick}
+                    onBackdropFileUpload={this.handleBackdropUpload}
+                    onBackdropFileUploadClick={this.handleFileUploadClick}
+                    onClick={this.handleClick}
+                    onDrop={this.handleDrop}
+                    onEmptyBackdropClick={this.handleEmptyBackdrop}
+                    onMouseEnter={this.handleMouseEnter}
+                    onMouseLeave={this.handleMouseLeave}
+                    onSurpriseBackdropClick={this.handleSurpriseBackdrop}
+                    onNewBackdropClick={this.handleNewBackdropClick}
+                    {...componentProps}
+                />
+                {this.state.aiBackdropModalVisible ? (
+                    <AIAssetGenerator
+                        title="AI Backdrop Generator"
+                        type="backdrop"
+                        onGenerate={this.handleAIBackdropGenerate}
+                        onAdd={this.handleAIBackdropAdd}
+                        onClose={this.handleAIBackdropClose}
+                    />
+                ) : null}
+            </React.Fragment>
         );
     }
 }

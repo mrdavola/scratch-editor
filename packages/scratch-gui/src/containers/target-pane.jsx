@@ -15,6 +15,9 @@ import {showStandardAlert, closeAlertWithId} from '../reducers/alerts';
 import {setRestore} from '../reducers/restore-deletion';
 import DragConstants from '../lib/drag-constants';
 import TargetPaneComponent from '../components/target-pane/target-pane.jsx';
+import AIAssetGenerator from '../components/ai-asset-generator/ai-asset-generator.jsx';
+import {generateSprite} from '../lib/ai-api-client.js';
+import {addAISprite} from '../lib/ai-sprite-injector.js';
 import {BLOCKS_DEFAULT_SCALE} from '../lib/layout-constants';
 import spriteLibraryContent from '../lib/libraries/sprites.json';
 import {handleFileUpload, spriteUpload} from '../lib/file-uploader.js';
@@ -52,10 +55,17 @@ class TargetPane extends React.Component {
             'handlePaintSpriteClick',
             'handleFileUploadClick',
             'handleSpriteUpload',
+            'handleAISpriteClick',
+            'handleAISpriteGenerate',
+            'handleAISpriteAdd',
+            'handleAISpriteClose',
             'setFileInput',
             'mergeDynamicAssets'
         ]);
 
+        this.state = {
+            aiSpriteModalVisible: false
+        };
         this.processedSprites = {};
     }
     componentDidMount () {
@@ -149,6 +159,21 @@ class TargetPane extends React.Component {
                 this.props.onActivateTab(COSTUMES_TAB_INDEX);
             });
         });
+    }
+    handleAISpriteClick () {
+        this.setState({aiSpriteModalVisible: true});
+    }
+    handleAISpriteGenerate (description, style) {
+        return generateSprite(description, style);
+    }
+    handleAISpriteAdd (base64PNG, description) {
+        const name = description.split(' ').slice(0, 3).join(' ') || 'AI Sprite';
+        addAISprite(this.props.vm, base64PNG, name).then(() => {
+            this.handleActivateBlocksTab();
+        });
+    }
+    handleAISpriteClose () {
+        this.setState({aiSpriteModalVisible: false});
     }
     handleActivateBlocksTab () {
         this.props.onActivateTab(BLOCKS_TAB_INDEX);
@@ -277,28 +302,40 @@ class TargetPane extends React.Component {
         } = this.props;
          
         return (
-            <TargetPaneComponent
-                {...componentProps}
-                fileInputRef={this.setFileInput}
-                onActivateBlocksTab={this.handleActivateBlocksTab}
-                onChangeSpriteDirection={this.handleChangeSpriteDirection}
-                onChangeSpriteName={this.handleChangeSpriteName}
-                onChangeSpriteRotationStyle={this.handleChangeSpriteRotationStyle}
-                onChangeSpriteSize={this.handleChangeSpriteSize}
-                onChangeSpriteVisibility={this.handleChangeSpriteVisibility}
-                onChangeSpriteX={this.handleChangeSpriteX}
-                onChangeSpriteY={this.handleChangeSpriteY}
-                onDeleteSprite={this.handleDeleteSprite}
-                onDrop={this.handleDrop}
-                onDuplicateSprite={this.handleDuplicateSprite}
-                onExportSprite={this.handleExportSprite}
-                onFileUploadClick={this.handleFileUploadClick}
-                onPaintSpriteClick={this.handlePaintSpriteClick}
-                onSelectSprite={this.handleSelectSprite}
-                onSpriteUpload={this.handleSpriteUpload}
-                onSurpriseSpriteClick={this.handleSurpriseSpriteClick}
-                onNewSpriteClick={this.handleNewSpriteClick}
-            />
+            <React.Fragment>
+                <TargetPaneComponent
+                    {...componentProps}
+                    fileInputRef={this.setFileInput}
+                    onActivateBlocksTab={this.handleActivateBlocksTab}
+                    onAISpriteClick={this.handleAISpriteClick}
+                    onChangeSpriteDirection={this.handleChangeSpriteDirection}
+                    onChangeSpriteName={this.handleChangeSpriteName}
+                    onChangeSpriteRotationStyle={this.handleChangeSpriteRotationStyle}
+                    onChangeSpriteSize={this.handleChangeSpriteSize}
+                    onChangeSpriteVisibility={this.handleChangeSpriteVisibility}
+                    onChangeSpriteX={this.handleChangeSpriteX}
+                    onChangeSpriteY={this.handleChangeSpriteY}
+                    onDeleteSprite={this.handleDeleteSprite}
+                    onDrop={this.handleDrop}
+                    onDuplicateSprite={this.handleDuplicateSprite}
+                    onExportSprite={this.handleExportSprite}
+                    onFileUploadClick={this.handleFileUploadClick}
+                    onPaintSpriteClick={this.handlePaintSpriteClick}
+                    onSelectSprite={this.handleSelectSprite}
+                    onSpriteUpload={this.handleSpriteUpload}
+                    onSurpriseSpriteClick={this.handleSurpriseSpriteClick}
+                    onNewSpriteClick={this.handleNewSpriteClick}
+                />
+                {this.state.aiSpriteModalVisible ? (
+                    <AIAssetGenerator
+                        title="AI Sprite Generator"
+                        type="sprite"
+                        onGenerate={this.handleAISpriteGenerate}
+                        onAdd={this.handleAISpriteAdd}
+                        onClose={this.handleAISpriteClose}
+                    />
+                ) : null}
+            </React.Fragment>
         );
     }
 }

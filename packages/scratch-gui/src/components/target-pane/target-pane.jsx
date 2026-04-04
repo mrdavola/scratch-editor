@@ -22,6 +22,7 @@ const TargetPane = ({
     hoveredTarget,
     spriteLibraryVisible,
     onActivateBlocksTab,
+    onAISpriteClick,
     onChangeSpriteDirection,
     onChangeSpriteName,
     onChangeSpriteRotationStyle,
@@ -62,6 +63,7 @@ const TargetPane = ({
             spriteFileInput={fileInputRef}
             sprites={sprites}
             stageSize={stageSize}
+            onAISpriteClick={onAISpriteClick}
             onChangeSpriteDirection={onChangeSpriteDirection}
             onChangeSpriteName={onChangeSpriteName}
             onChangeSpriteRotationStyle={onChangeSpriteRotationStyle}
@@ -136,6 +138,7 @@ TargetPane.propTypes = {
         receivedBlocks: PropTypes.bool
     }),
     onActivateBlocksTab: PropTypes.func.isRequired,
+    onAISpriteClick: PropTypes.func,
     onChangeSpriteDirection: PropTypes.func,
     onChangeSpriteName: PropTypes.func,
     onChangeSpriteRotationStyle: PropTypes.func,

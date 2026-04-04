@@ -34,14 +34,23 @@ import fileUploadIcon from '../components/action-menu/icon--file-upload.svg';
 import paintIcon from '../components/action-menu/icon--paint.svg';
 import surpriseIcon from '../components/action-menu/icon--surprise.svg';
 import searchIcon from '../components/action-menu/icon--search.svg';
+import aiIcon from '../components/action-menu/icon--ai.svg';
 
 import costumeLibraryContent from '../lib/libraries/costumes.json';
 import backdropLibraryContent from '../lib/libraries/backdrops.json';
+import AIAssetGenerator from '../components/ai-asset-generator/ai-asset-generator.jsx';
+import {generateCostume} from '../lib/ai-api-client.js';
+import {addAICostume} from '../lib/ai-costume-injector.js';
 import {ModalFocusContext} from '../contexts/modal-focus-context.jsx';
 import {costumeShape} from '../lib/assets-prop-types.js';
 import mergeDynamicAssets from '../lib/merge-dynamic-assets.js';
 
 let messages = defineMessages({
+    addAICostumeMsg: {
+        defaultMessage: 'AI Generate',
+        description: 'Button to add an AI-generated costume in the editor tab',
+        id: 'gui.costumeTab.addAICostume'
+    },
     addLibraryBackdropMsg: {
         defaultMessage: 'Choose a Backdrop',
         description: 'Button to add a backdrop in the editor tab',
@@ -93,6 +102,10 @@ class CostumeTab extends React.Component {
             'handleFileUploadClick',
             'handleCostumeUpload',
             'handleDrop',
+            'handleAICostumeClick',
+            'handleAICostumeGenerate',
+            'handleAICostumeAdd',
+            'handleAICostumeClose',
             'setFileInput',
             'mergeDynamicCostumes',
             'mergeDynamicBackdrops'
@@ -104,9 +117,9 @@ class CostumeTab extends React.Component {
         } = props;
         const target = editingTarget && sprites[editingTarget] ? sprites[editingTarget] : stage;
         if (target && target.currentCostume) {
-            this.state = {selectedCostumeIndex: target.currentCostume};
+            this.state = {selectedCostumeIndex: target.currentCostume, aiCostumeModalVisible: false};
         } else {
-            this.state = {selectedCostumeIndex: 0};
+            this.state = {selectedCostumeIndex: 0, aiCostumeModalVisible: false};
         }
         this.processedCostumes = {};
         this.processedBackdrops = {};
@@ -258,6 +271,19 @@ class CostumeTab extends React.Component {
         };
         this.handleNewCostume(vmCostume);
     }
+    handleAICostumeClick () {
+        this.setState({aiCostumeModalVisible: true});
+    }
+    handleAICostumeGenerate (description, style) {
+        return generateCostume(description, style);
+    }
+    handleAICostumeAdd (base64PNG, description) {
+        const name = description.split(' ').slice(0, 3).join(' ') || 'AI Costume';
+        addAICostume(this.props.vm, base64PNG, name);
+    }
+    handleAICostumeClose () {
+        this.setState({aiCostumeModalVisible: false});
+    }
     handleCostumeUpload (e) {
         const storage = this.props.vm.runtime.storage;
         const targetId = this.props.vm.editingTarget.id;
@@ -338,6 +364,7 @@ class CostumeTab extends React.Component {
             dragPayload: costume
         })) : [];
         return (
+            <React.Fragment>
             <AssetPanel
                 ariaLabel={ariaLabel}
                 ariaRole={ariaRole}
@@ -346,6 +373,11 @@ class CostumeTab extends React.Component {
                         title: intl.formatMessage(addLibraryMessage),
                         img: addLibraryIcon,
                         onClick: addLibraryFunc
+                    },
+                    {
+                        title: intl.formatMessage(messages.addAICostumeMsg),
+                        img: aiIcon,
+                        onClick: this.handleAICostumeClick
                     },
                     {
                         title: intl.formatMessage(addFileMessage),
@@ -390,6 +422,16 @@ class CostumeTab extends React.Component {
                     null
                 }
             </AssetPanel>
+            {this.state.aiCostumeModalVisible ? (
+                <AIAssetGenerator
+                    title={isStage ? 'AI Backdrop Generator' : 'AI Costume Generator'}
+                    type={isStage ? 'backdrop' : 'costume'}
+                    onGenerate={this.handleAICostumeGenerate}
+                    onAdd={this.handleAICostumeAdd}
+                    onClose={this.handleAICostumeClose}
+                />
+            ) : null}
+            </React.Fragment>
         );
     }
 }
