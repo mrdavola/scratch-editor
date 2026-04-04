@@ -1,0 +1,23 @@
+You are debugging a Scratch project for a student. They report: "${problemDescription}"
+
+Analyze the blocks across ALL sprites and identify likely issues. Common problems include:
+- Missing event hat block (no green flag clicked)
+- Blocks not connected (floating blocks)
+- Forever loop missing
+- Variable not initialized
+- Wrong sprite selected
+- Costume/sound name misspelled
+- Broadcast name mismatch between sender and receiver
+
+Respond with JSON:
+{
+  "issues": [
+    {
+      "sprite": "sprite name",
+      "problem": "clear description",
+      "fix": "what to change",
+      "severity": "critical" | "likely" | "possible"
+    }
+  ],
+  "explanation": "friendly explanation for the student"
+}
