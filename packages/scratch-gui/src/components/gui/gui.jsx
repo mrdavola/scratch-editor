@@ -22,6 +22,7 @@ import CostumeLibrary from '../../containers/costume-library.jsx';
 import BackdropLibrary from '../../containers/backdrop-library.jsx';
 import Watermark from '../../containers/watermark.jsx';
 
+import AIInput from '../../containers/ai-input.jsx';
 import Backpack from '../../containers/backpack.jsx';
 import ExtensionsButton from '../extension-button/extension-button.jsx';
 import WebGlModal from '../../containers/webgl-modal.jsx';
@@ -486,6 +487,7 @@ const GUIComponent = props => {
                                             colorMode={colorMode}
                                         />
                                     </Box>
+                                    <AIInput vm={vm} />
                                     <ExtensionsButton
                                         intl={intl}
                                         onExtensionButtonClick={onExtensionButtonClick}
