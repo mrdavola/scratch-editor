@@ -41,11 +41,7 @@ export const injectGeneratedBlocks = (vm, generatedResult) => {
     // This handles fields, inputs, shadow blocks, and all edge cases correctly
     const sb3 = require('@scratch/scratch-vm/src/serialization/sb3');
     const blocksToInject = JSON.parse(JSON.stringify(blocks));
-    const originalCount = Object.keys(blocksToInject).length;
     sb3.deserializeBlocks(blocksToInject);
-    const deserializedCount = Object.keys(blocksToInject).length;
-    console.log(`[AI Injector] Deserialized ${originalCount} blocks → ${deserializedCount} blocks (${deserializedCount - originalCount} shadow blocks created)`);
-    console.log('[AI Injector] All block IDs:', Object.keys(blocksToInject));
 
     // Step 3: Map variable IDs to real VM IDs
     mapVariableIds(blocksToInject, target);
@@ -54,7 +50,6 @@ export const injectGeneratedBlocks = (vm, generatedResult) => {
     for (const blockId in blocksToInject) {
         if (!Object.prototype.hasOwnProperty.call(blocksToInject, blockId)) continue;
         const block = blocksToInject[blockId];
-        console.log(`[AI Injector] Creating block: ${blockId} (${block.opcode}, shadow=${block.shadow}, topLevel=${block.topLevel})`);
         target.blocks.createBlock(block);
     }
 
