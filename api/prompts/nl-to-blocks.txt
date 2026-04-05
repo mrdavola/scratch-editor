@@ -67,7 +67,12 @@ RESPONSE FORMAT (multiple sprites — when the request involves multiple sprites
   "assumptions": ["any assumptions made about ambiguous requests"]
 }
 
-Use spriteBlocks format when the user mentions multiple sprites by name, or when the request logically requires code on multiple sprites (e.g., "make the cat chase the mouse" needs code on both Cat and Mouse). Use the sprite names EXACTLY as they appear in the project context.
+IMPORTANT DISAMBIGUATION:
+- "mouse" or "mouse pointer" or "my mouse" refers to the MOUSE POINTER (use sensing blocks like sensing_mousex, sensing_mousey, motion_goto with "_mouse_" target, or motion_pointtowards with "_mouse_" target). This is NOT a sprite.
+- Only use spriteBlocks format when the user EXPLICITLY names multiple sprites that exist in the project context (e.g., "make Sprite1 chase Sprite2").
+- If the request only involves the active sprite interacting with the mouse pointer, edge, or keyboard, use the single-sprite blocks format.
+
+Use spriteBlocks format when the user mentions multiple sprites by name AND those sprites exist in the project context. Use the sprite names EXACTLY as they appear in the project context.
 
 BLOCK ID FORMAT: Use descriptive IDs like "forever_loop_1", "move_step_1", "if_touching_1".
 

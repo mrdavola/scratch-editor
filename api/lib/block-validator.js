@@ -45,6 +45,7 @@ const VALID_OPCODES = new Set([
     'operator_mod', 'operator_round', 'operator_mathop',
 
     // Variables
+    'data_variable', 'data_listcontents',
     'data_setvariableto', 'data_changevariableby', 'data_showvariable',
     'data_hidevariable', 'data_addtolist', 'data_deleteoflist',
     'data_deletealloflist', 'data_insertatlist', 'data_replaceitemoflist',
@@ -65,15 +66,16 @@ const VALID_OPCODES = new Set([
 
 export function validateBlockJSON(blocks, context = {}) {
     const errors = [];
+    const warnings = [];
 
     if (!blocks || typeof blocks !== 'object') {
-        return { valid: false, errors: ['blocks must be a non-null object'] };
+        return { valid: false, errors: ['blocks must be a non-null object'], warnings: [] };
     }
 
     const blockIds = new Set(Object.keys(blocks));
 
     if (blockIds.size === 0) {
-        return { valid: false, errors: ['blocks object is empty'] };
+        return { valid: false, errors: ['blocks object is empty'], warnings: [] };
     }
 
     let hasTopLevel = false;
@@ -115,10 +117,15 @@ export function validateBlockJSON(blocks, context = {}) {
     }
 
     if (!hasTopLevel) {
-        errors.push('No top-level block found. At least one block must have topLevel: true');
+        // Downgrade to warning if createEntities has content (e.g., variable-only requests)
+        if (context.hasCreateEntities) {
+            warnings.push('No top-level block found, but createEntities has content');
+        } else {
+            errors.push('No top-level block found. At least one block must have topLevel: true');
+        }
     }
 
-    return { valid: errors.length === 0, errors };
+    return { valid: errors.length === 0, errors, warnings };
 }
 
 export { VALID_OPCODES };

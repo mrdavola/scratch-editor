@@ -175,6 +175,26 @@ export async function POST(request) {
             );
         }
 
+        // Handle entity-only responses (e.g., "make a score variable")
+        const hasCreateEntities = parsed.createEntities && (
+            (parsed.createEntities.variables && parsed.createEntities.variables.length > 0) ||
+            (parsed.createEntities.lists && parsed.createEntities.lists.length > 0) ||
+            (parsed.createEntities.broadcasts && parsed.createEntities.broadcasts.length > 0)
+        );
+
+        if ((!parsed.blocks || Object.keys(parsed.blocks || {}).length === 0) && !parsed.spriteBlocks && hasCreateEntities) {
+            return NextResponse.json(
+                {
+                    success: true,
+                    blocks: parsed.blocks || {},
+                    createEntities: parsed.createEntities,
+                    explanation: parsed.explanation || '',
+                    assumptions: parsed.assumptions || [],
+                },
+                { status: 200, headers: corsHeaders }
+            );
+        }
+
         // Handle multi-sprite or single-sprite response
         if (parsed.spriteBlocks) {
             // Multi-sprite response — validate each sprite's blocks
@@ -217,7 +237,7 @@ export async function POST(request) {
             );
         } else if (parsed.blocks) {
             // Single-sprite response — existing logic
-            const validation = validateBlockJSON(parsed.blocks, context);
+            const validation = validateBlockJSON(parsed.blocks, { ...context, hasCreateEntities });
             if (!validation.valid) {
                 return NextResponse.json(
                     {
