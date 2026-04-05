@@ -5,7 +5,7 @@ import {PLATFORM} from '../lib/platform.js';
 import log from '../lib/log.js';
 
 const onClickLogo = () => {
-    window.location = 'https://scratch.mit.edu';
+    window.location = 'https://www.upshiftlearning.com';
 };
 
 const handleTelemetryModalCancel = () => {
