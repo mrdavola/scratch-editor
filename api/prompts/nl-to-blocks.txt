@@ -61,8 +61,53 @@ INPUT FORMAT FOR BLOCKS:
 - Literal string: [1, [10, "hello"]]
 - Variable reference: [3, [12, "variableName", "variableId"], [4, "0"]]
 - Block reference (reporter): [3, "reporter_block_id", [4, "0"]]
-- Dropdown/menu (shadow): [1, [<menu_type>, "<value>"]]
+- Menu/dropdown inputs: Use a SEPARATE shadow block (see MENU BLOCKS below)
 
 FIELD FORMAT:
 - Variable field: ["variableName", "variableId"]
 - Dropdown field: ["value", null]
+
+MENU BLOCKS (for dropdowns like sounds, costumes, backdrops, etc.):
+Menus are separate shadow blocks referenced by the parent. Example for "play sound Meow until done":
+
+"play_sound_1": {
+  "opcode": "sound_playuntildone",
+  "next": null,
+  "parent": "flag_1",
+  "inputs": {
+    "SOUND_MENU": [1, "sound_menu_1"]
+  },
+  "fields": {},
+  "shadow": false,
+  "topLevel": false
+},
+"sound_menu_1": {
+  "opcode": "sound_sounds_menu",
+  "next": null,
+  "parent": "play_sound_1",
+  "inputs": {},
+  "fields": {
+    "SOUND_MENU": ["Meow", null]
+  },
+  "shadow": true,
+  "topLevel": false
+}
+
+Common menu opcodes and their field names:
+- sound_sounds_menu → field SOUND_MENU (sound name)
+- looks_costume → field COSTUME (costume name)
+- looks_backdrops → field BACKDROP (backdrop name)
+- motion_goto_menu → field TO (target: "_random_", "_mouse_", or sprite name)
+- motion_glideto_menu → field TO
+- motion_pointtowards_menu → field TOWARDS
+- control_create_clone_of_menu → field CLONE_OPTION
+- sensing_touchingobjectmenu → field TOUCHINGOBJECTMENU
+- sensing_distancetomenu → field DISTANCETOMENU
+- sensing_keyoptions → field KEY_OPTION (key name like "space", "up arrow")
+- event_broadcast_menu → field BROADCAST_OPTION (broadcast name)
+- operator_mathop_menu → field OPERATOR (e.g. "abs", "floor", "sqrt")
+
+For key press events (event_whenkeypressed), use a field directly on the block:
+"fields": { "KEY_OPTION": ["space", null] }
+
+ALWAYS create explicit menu shadow blocks for sound, costume, backdrop, clone, touching, and distance inputs. Do NOT use the primitive array format for menus.
