@@ -103,7 +103,7 @@ const AIInputComponent = props => {
             {loading ? (
                 <div className={styles.aiLoadingBar} />
             ) : null}
-            <div className={styles.aiInputRow}>
+            <div className={`${styles.aiInputRow} ${loading ? styles.aiInputRowLoading : ''}`}>
                 <input
                     autoFocus
                     className={styles.aiInputField}
