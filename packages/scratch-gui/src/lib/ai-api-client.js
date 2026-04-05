@@ -3,9 +3,11 @@
  * All requests go through the API gateway.
  */
 
-const API_BASE = typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_URL
-    ? process.env.NEXT_PUBLIC_API_URL
-    : 'http://localhost:3001';
+const API_BASE = typeof process !== 'undefined' && process.env && process.env.SCRAITCH_API_URL
+    ? process.env.SCRAITCH_API_URL
+    : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? 'http://localhost:3001'
+        : 'https://api-five-olive-55.vercel.app');
 
 async function apiCall(endpoint, body) {
     const response = await fetch(`${API_BASE}/api/${endpoint}`, {
