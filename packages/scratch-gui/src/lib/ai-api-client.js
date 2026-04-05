@@ -3,11 +3,11 @@
  * All requests go through the API gateway.
  */
 
-const API_BASE = typeof process !== 'undefined' && process.env && process.env.SCRAITCH_API_URL
-    ? process.env.SCRAITCH_API_URL
-    : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-        ? 'http://localhost:3001'
-        : 'https://api-five-olive-55.vercel.app');
+// In production, use relative URLs (same domain via Vercel rewrites)
+// In local dev, hit the API server on port 3001
+const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:3001'
+    : '';
 
 async function apiCall(endpoint, body) {
     const response = await fetch(`${API_BASE}/api/${endpoint}`, {
