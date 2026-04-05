@@ -20,11 +20,17 @@ export const startVoiceInput = (onResult, onError) => {
 
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
+        recognition.stop();
         onResult(transcript);
     };
 
     recognition.onerror = (event) => {
+        recognition.stop();
         onError(`Voice recognition error: ${event.error}`);
+    };
+
+    recognition.onend = () => {
+        // Ensure cleanup even if stop/abort wasn't explicit
     };
 
     recognition.start();

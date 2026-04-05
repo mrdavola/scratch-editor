@@ -48,7 +48,7 @@ class AIInput extends React.Component {
     handleMicClick () {
         if (this.state.isListening) {
             if (this._recognition) {
-                this._recognition.abort();
+                this._recognition.stop();
                 this._recognition = null;
             }
             this.setState({isListening: false});
