@@ -1,10 +1,182 @@
 /**
  * Injects AI-generated blocks into the scratch-vm workspace.
  *
- * Uses the VM's own sb3 deserializer to convert blocks from the compact
+ * Includes an inlined sb3 deserializer to convert blocks from the compact
  * sb3 JSON format into the internal format the VM expects.
+ * (Inlined to avoid importing scratch-vm internals which fail outside monorepo context.)
  */
-/* eslint-disable global-require */
+
+// --- Inlined sb3 deserialization (from scratch-vm/src/serialization/sb3) ---
+
+const INPUT_SAME_BLOCK_SHADOW = 1;
+const INPUT_BLOCK_NO_SHADOW = 2;
+const INPUT_DIFF_BLOCK_SHADOW = 3;
+
+const PRIMITIVE_MAP = {
+    4: {opcode: 'math_number', field: 'NUM'},
+    5: {opcode: 'math_positive_number', field: 'NUM'},
+    6: {opcode: 'math_whole_number', field: 'NUM'},
+    7: {opcode: 'math_integer', field: 'NUM'},
+    8: {opcode: 'math_angle', field: 'NUM'},
+    9: {opcode: 'colour_picker', field: 'COLOUR'},
+    10: {opcode: 'text', field: 'TEXT'},
+    11: {opcode: 'event_broadcast_menu', field: 'BROADCAST_OPTION'},
+    12: {opcode: 'data_variable', field: 'VARIABLE'},
+    13: {opcode: 'data_listcontents', field: 'LIST'}
+};
+
+/**
+ * Deserialize an input descriptor (compact array) into a full block in the blocks object.
+ * @param {Array} inputDescArr - The compact input descriptor array.
+ * @param {string|null} parentId - The parent block ID.
+ * @param {boolean} isShadow - Whether this is a shadow block.
+ * @param {object} blocks - The blocks object to mutate.
+ * @returns {string} The ID of the deserialized block.
+ */
+function deserializeInputDesc (inputDescArr, parentId, isShadow, blocks) {
+    const primitiveType = inputDescArr[0];
+    const primitiveInfo = PRIMITIVE_MAP[primitiveType];
+    if (!primitiveInfo) {
+        throw new Error(`Unknown primitive type: ${primitiveType}`);
+    }
+    const newId = generateUID();
+    const fields = {};
+    const fieldData = {
+        name: primitiveInfo.field,
+        value: inputDescArr[1]
+    };
+    if (primitiveType === 11) {
+        // Broadcast: value is name, id is in index 2
+        fieldData.id = inputDescArr[2];
+        fieldData.variableType = 'broadcast_msg';
+    } else if (primitiveType === 12) {
+        // Variable: value is name, id is in index 2
+        fieldData.id = inputDescArr[2];
+        fieldData.variableType = '';
+    } else if (primitiveType === 13) {
+        // List: value is name, id is in index 2
+        fieldData.id = inputDescArr[2];
+        fieldData.variableType = 'list';
+    }
+    fields[primitiveInfo.field] = fieldData;
+
+    blocks[newId] = {
+        id: newId,
+        opcode: primitiveInfo.opcode,
+        inputs: {},
+        fields: fields,
+        next: null,
+        topLevel: false,
+        parent: parentId,
+        shadow: isShadow
+    };
+    return newId;
+}
+
+/**
+ * Deserialize inputs from the compact sb3 format.
+ * @param {object} inputs - The compact inputs object.
+ * @param {string} parentId - The parent block ID.
+ * @param {object} blocks - The blocks object to mutate.
+ * @returns {object} The deserialized inputs object.
+ */
+function deserializeInputs (inputs, parentId, blocks) {
+    const result = {};
+    for (const inputName in inputs) {
+        if (!Object.prototype.hasOwnProperty.call(inputs, inputName)) continue;
+        const inputDescArr = inputs[inputName];
+        const shadowIndicator = inputDescArr[0];
+        let blockId = null;
+        let shadowId = null;
+
+        if (shadowIndicator === INPUT_SAME_BLOCK_SHADOW) {
+            // input[1] is either a block ID (string) or a primitive array
+            if (Array.isArray(inputDescArr[1])) {
+                const id = deserializeInputDesc(inputDescArr[1], parentId, true, blocks);
+                blockId = id;
+                shadowId = id;
+            } else {
+                blockId = inputDescArr[1];
+                shadowId = inputDescArr[1];
+            }
+        } else if (shadowIndicator === INPUT_BLOCK_NO_SHADOW) {
+            blockId = inputDescArr[1];
+            shadowId = null;
+        } else if (shadowIndicator === INPUT_DIFF_BLOCK_SHADOW) {
+            blockId = inputDescArr[1];
+            if (Array.isArray(inputDescArr[2])) {
+                shadowId = deserializeInputDesc(inputDescArr[2], parentId, true, blocks);
+            } else {
+                shadowId = inputDescArr[2];
+            }
+        }
+
+        result[inputName] = {
+            name: inputName,
+            block: blockId,
+            shadow: shadowId
+        };
+    }
+    return result;
+}
+
+/**
+ * Deserialize fields from the compact sb3 format.
+ * @param {object} fields - The compact fields object.
+ * @returns {object} The deserialized fields object.
+ */
+function deserializeFields (fields) {
+    const result = {};
+    for (const fieldName in fields) {
+        if (!Object.prototype.hasOwnProperty.call(fields, fieldName)) continue;
+        const fieldDescArr = fields[fieldName];
+        const fieldData = {
+            name: fieldName,
+            value: fieldDescArr[0]
+        };
+        if (fieldDescArr.length > 1 && fieldDescArr[1] !== null) {
+            fieldData.id = fieldDescArr[1];
+        }
+        if (fieldName === 'BROADCAST_OPTION') {
+            fieldData.variableType = 'broadcast_msg';
+        } else if (fieldName === 'VARIABLE') {
+            fieldData.variableType = '';
+        } else if (fieldName === 'LIST') {
+            fieldData.variableType = 'list';
+        }
+        result[fieldName] = fieldData;
+    }
+    return result;
+}
+
+/**
+ * Deserialize blocks from compact sb3 JSON format into the internal VM format.
+ * Mutates the blocks object in place.
+ * @param {object} blocks - The blocks object to deserialize.
+ * @returns {object} The deserialized blocks object.
+ */
+function deserializeBlocks (blocks) {
+    for (const blockId in blocks) {
+        if (!Object.prototype.hasOwnProperty.call(blocks, blockId)) continue;
+        const block = blocks[blockId];
+        if (Array.isArray(block)) {
+            // This is a top-level primitive (compact array form)
+            delete blocks[blockId];
+            deserializeInputDesc(block, null, false, blocks);
+            continue;
+        }
+        block.id = blockId;
+        if (block.inputs) {
+            block.inputs = deserializeInputs(block.inputs, blockId, blocks);
+        }
+        if (block.fields) {
+            block.fields = deserializeFields(block.fields);
+        }
+    }
+    return blocks;
+}
+
+// --- End inlined sb3 deserialization ---
 
 export const injectGeneratedBlocks = (vm, generatedResult) => {
     const {blocks, createEntities, explanation} = generatedResult;
@@ -39,9 +211,8 @@ export const injectGeneratedBlocks = (vm, generatedResult) => {
 
     // Step 2: Use the VM's own sb3 deserializer
     try {
-        const sb3 = require('@scratch/scratch-vm/src/serialization/sb3');
         const blocksToInject = JSON.parse(JSON.stringify(blocks));
-        sb3.deserializeBlocks(blocksToInject);
+        deserializeBlocks(blocksToInject);
 
         // Step 3: Map variable IDs to real VM IDs
         mapVariableIds(blocksToInject, target);
@@ -112,9 +283,8 @@ export const injectMultiSpriteBlocks = (vm, generatedResult) => {
 
         // Deserialize and inject blocks
         try {
-            const sb3 = require('@scratch/scratch-vm/src/serialization/sb3');
             const blocksToInject = JSON.parse(JSON.stringify(spriteData.blocks));
-            sb3.deserializeBlocks(blocksToInject);
+            deserializeBlocks(blocksToInject);
 
             mapVariableIds(blocksToInject, target);
 
