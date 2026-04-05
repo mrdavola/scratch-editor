@@ -125,11 +125,11 @@ const AIInputComponent = props => {
                     </button>
                 ) : null}
                 <button
-                    className={styles.aiSendButton}
-                    disabled={loading || !inputValue.trim()}
+                    className={`${styles.aiSendButton} ${loading ? styles.aiSendLoading : ''}`}
+                    disabled={!loading && !inputValue.trim()}
                     onClick={onSubmit}
                 >
-                    <SendIcon />
+                    {loading ? <SparkleIcon /> : <SendIcon />}
                 </button>
                 <button
                     className={styles.aiCloseButton}
