@@ -70,9 +70,22 @@ function extractJSON(text) {
         // Try extracting from markdown code fences
         const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
         if (fenceMatch) {
-            return JSON.parse(fenceMatch[1].trim());
+            try {
+                return JSON.parse(fenceMatch[1].trim());
+            } catch {
+                // Fall through
+            }
         }
-        throw new Error('Failed to parse response as JSON');
+        // Try to find any JSON object in the text
+        const objMatch = text.match(/\{[\s\S]*\}/);
+        if (objMatch) {
+            try {
+                return JSON.parse(objMatch[0]);
+            } catch {
+                // Fall through
+            }
+        }
+        throw new Error('Failed to parse AI response as valid JSON');
     }
 }
 
@@ -145,7 +158,7 @@ export async function POST(request) {
                 responseMimeType: 'application/json',
                 temperature: 0.2,
                 topP: 0.8,
-                maxOutputTokens: 4096,
+                maxOutputTokens: 8192,
             },
         });
 
