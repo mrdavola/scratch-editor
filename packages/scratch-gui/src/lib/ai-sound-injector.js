@@ -16,7 +16,7 @@ export const addAISound = async (vm, base64WAV, name) => {
     const asset = storage.createAsset(
         storage.AssetType.Sound,
         storage.DataFormat.WAV,
-        bytes.buffer,
+        new Uint8Array(bytes),
         null,
         true
     );
@@ -29,7 +29,8 @@ export const addAISound = async (vm, base64WAV, name) => {
         assetId: asset.assetId
     };
 
-    // Use the same pattern as file-uploader.js soundUpload
-    await vm.addSound(vmSound);
+    await vm.addSound(vmSound).catch(e => {
+        console.error('Failed to add sound:', e);
+    });
     return true;
 };
