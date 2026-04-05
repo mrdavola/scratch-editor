@@ -128,7 +128,7 @@ const AIInputComponent = props => {
                     <div
                         className={styles.aiSendButton}
                         style={{
-                            backgroundColor: 'hsla(263, 70%, 70%, 1)',
+                            backgroundColor: 'hsl(0, 0%, 60%)',
                             cursor: 'default'
                         }}
                     >

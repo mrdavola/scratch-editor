@@ -30,7 +30,7 @@
     align-items: center;
     justify-content: space-between;
     padding: $space calc($space * 2);
-    background-color: hsla(263, 70%, 58%, 1);
+    background-color: hsl(0, 0%, 51%);
     color: $ui-white;
 }
 
@@ -99,7 +99,7 @@
 }
 
 .description-input:focus {
-    border-color: hsla(263, 70%, 58%, 1);
+    border-color: hsl(0, 0%, 51%);
 }
 
 .description-input::placeholder {
@@ -121,7 +121,7 @@
 }
 
 .style-select:focus {
-    border-color: hsla(263, 70%, 58%, 1);
+    border-color: hsl(0, 0%, 51%);
 }
 
 .generate-button {
@@ -129,7 +129,7 @@
     padding: calc($space * 1.5);
     border: none;
     border-radius: calc($space * 2.5);
-    background-color: hsla(263, 70%, 58%, 1);
+    background-color: hsl(0, 0%, 51%);
     color: $ui-white;
     font-size: 0.875rem;
     font-weight: bold;
@@ -147,7 +147,7 @@
 }
 
 .generate-button:hover:not(:disabled) {
-    background-color: hsla(263, 70%, 50%, 1);
+    background-color: hsl(0, 0%, 40%);
 }
 
 .generate-button:disabled {
@@ -167,7 +167,7 @@
     width: 3rem;
     height: 3rem;
     border: 3px solid $ui-tertiary;
-    border-top-color: hsla(263, 70%, 58%, 1);
+    border-top-color: hsl(0, 0%, 51%);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -247,8 +247,8 @@
 }
 
 .retry-button:hover {
-    border-color: hsla(263, 70%, 58%, 1);
-    color: hsla(263, 70%, 58%, 1);
+    border-color: hsl(0, 0%, 51%);
+    color: hsl(0, 0%, 51%);
 }
 
 .error-message {

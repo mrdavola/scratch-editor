@@ -14,7 +14,7 @@
 
 .remix-card {
     background-color: $ui-white;
-    border: 1px solid hsla(263, 50%, 90%, 1);
+    border: 1px solid hsla(0, 0%, 85%, 1);
     border-radius: $form-radius;
     padding: calc($space / 2) $space;
     display: flex;
@@ -47,7 +47,7 @@
     padding: 3px 8px;
     border: none;
     border-radius: calc($space * 2);
-    background-color: hsla(263, 70%, 58%, 1);
+    background-color: hsl(0, 0%, 51%);
     color: $ui-white;
     font-size: 0.625rem;
     font-weight: bold;
@@ -57,7 +57,7 @@
 }
 
 .remix-try-button:hover {
-    background-color: hsla(263, 70%, 50%, 1);
+    background-color: hsl(0, 0%, 40%);
 }
 
 .remix-dismiss {

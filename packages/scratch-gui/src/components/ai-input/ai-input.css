@@ -11,19 +11,19 @@
     height: 2.75rem;
     border-radius: 50%;
     border: none;
-    background-color: hsla(263, 70%, 58%, 1);
+    background-color: hsl(0, 0%, 51%);
     color: $ui-white;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px hsla(263, 70%, 30%, 0.3);
+    box-shadow: 0 2px 8px hsla(0, 0%, 30%, 0.3);
     transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .ai-fab:hover {
     transform: scale(1.1);
-    background-color: hsla(263, 70%, 50%, 1);
+    background-color: hsl(0, 0%, 40%);
 }
 
 .ai-fab svg {
@@ -64,12 +64,12 @@
     gap: calc($space / 2);
     background-color: $ui-white;
     border-radius: calc($space * 2.5);
-    box-shadow: 0 2px 12px hsla(0, 0%, 0%, 0.15), 0 0 0 1px hsla(263, 50%, 85%, 0.5);
+    box-shadow: 0 2px 12px hsla(0, 0%, 0%, 0.15), 0 0 0 1px hsla(0, 0%, 70%, 0.5);
     padding: 4px 4px 4px calc($space * 1.5);
 }
 
 .ai-input-row-loading {
-    box-shadow: 0 2px 12px hsla(263, 70%, 58%, 0.4), 0 0 0 2px hsla(263, 70%, 58%, 0.3);
+    box-shadow: 0 2px 12px hsla(0, 0%, 51%, 0.4), 0 0 0 2px hsla(0, 0%, 51%, 0.3);
 }
 
 .ai-input-field {
@@ -116,7 +116,7 @@
 }
 
 .ai-mic-button:hover:not(:disabled) {
-    color: hsla(263, 70%, 58%, 1);
+    color: hsl(0, 0%, 51%);
 }
 
 .ai-mic-button:disabled {
@@ -153,7 +153,7 @@
     padding: 0;
     border: none;
     border-radius: 50%;
-    background-color: hsla(263, 70%, 58%, 1);
+    background-color: hsl(0, 0%, 51%);
     color: $ui-white;
     cursor: pointer;
     display: flex;
@@ -169,7 +169,7 @@
 }
 
 .ai-send-button:hover:not(:disabled) {
-    background-color: hsla(263, 70%, 50%, 1);
+    background-color: hsl(0, 0%, 40%);
 }
 
 /* Global keyframe for loading spinner (not scoped by CSS modules) */
@@ -210,9 +210,9 @@
     border-radius: 2px;
     background: linear-gradient(
         90deg,
-        hsla(263, 70%, 90%, 1),
-        hsla(263, 70%, 58%, 1),
-        hsla(263, 70%, 90%, 1)
+        hsla(0, 0%, 85%, 1),
+        hsla(0, 0%, 51%, 1),
+        hsla(0, 0%, 85%, 1)
     );
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
@@ -242,8 +242,8 @@
 .ai-explanation {
     padding: calc($space / 2) $space;
     padding-right: calc($space * 2.5);
-    background-color: hsla(263, 70%, 97%, 1);
-    border: 1px solid hsla(263, 50%, 90%, 1);
+    background-color: hsla(0, 0%, 96%, 1);
+    border: 1px solid hsla(0, 0%, 85%, 1);
     border-radius: $form-radius;
     color: $text-primary;
     font-size: 0.75rem;
