@@ -9,7 +9,7 @@ import log from '../lib/log.js';
 import {PLATFORM} from '../lib/platform.js';
 
 const onClickLogo = () => {
-    window.location = 'https://www.upshiftlearning.com';
+    window.location = 'https://scratch-gui-beta.vercel.app';
 };
 
 const handleTelemetryModalCancel = () => {
