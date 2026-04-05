@@ -124,13 +124,39 @@ const AIInputComponent = props => {
                         <MicIcon />
                     </button>
                 ) : null}
-                <button
-                    className={`${styles.aiSendButton} ${loading ? styles.aiSendLoading : ''}`}
-                    disabled={!loading && !inputValue.trim()}
-                    onClick={onSubmit}
-                >
-                    {loading ? <SparkleIcon /> : <SendIcon />}
-                </button>
+                {loading ? (
+                    <div
+                        className={styles.aiSendButton}
+                        style={{
+                            backgroundColor: 'hsla(263, 70%, 70%, 1)',
+                            cursor: 'default'
+                        }}
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            style={{
+                                width: '1.25rem',
+                                height: '1.25rem',
+                                animation: 'ai-spin 1s linear infinite'
+                            }}
+                        >
+                            <path
+                                d="M12 2L13.09 8.26L18 6L14.74 10.91L21 12L14.74 13.09L18 18L13.09 15.74L12 22L10.91 15.74L6 18L9.26 13.09L3 12L9.26 10.91L6 6L10.91 8.26L12 2Z"
+                                fill="currentColor"
+                            />
+                        </svg>
+                    </div>
+                ) : (
+                    <button
+                        className={styles.aiSendButton}
+                        disabled={!inputValue.trim()}
+                        onClick={onSubmit}
+                    >
+                        <SendIcon />
+                    </button>
+                )}
                 <button
                     className={styles.aiCloseButton}
                     onClick={onClose}
