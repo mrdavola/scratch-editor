@@ -175,36 +175,76 @@ export async function POST(request) {
             );
         }
 
-        // Validate blocks
-        if (!parsed.blocks) {
+        // Handle multi-sprite or single-sprite response
+        if (parsed.spriteBlocks) {
+            // Multi-sprite response — validate each sprite's blocks
+            const validatedSpriteBlocks = {};
+            const errors = [];
+
+            for (const [spriteName, spriteData] of Object.entries(parsed.spriteBlocks)) {
+                if (spriteData.blocks) {
+                    const validation = validateBlockJSON(spriteData.blocks, context);
+                    if (validation.valid) {
+                        validatedSpriteBlocks[spriteName] = {
+                            blocks: spriteData.blocks,
+                            createEntities: spriteData.createEntities || {}
+                        };
+                    } else {
+                        errors.push(`${spriteName}: ${validation.errors.join(', ')}`);
+                    }
+                }
+            }
+
+            if (Object.keys(validatedSpriteBlocks).length === 0) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error: 'No valid blocks in multi-sprite response',
+                        validationErrors: errors,
+                    },
+                    { status: 422, headers: corsHeaders }
+                );
+            }
+
             return NextResponse.json(
-                { success: false, error: 'AI response did not contain blocks' },
+                {
+                    success: true,
+                    spriteBlocks: validatedSpriteBlocks,
+                    explanation: parsed.explanation || '',
+                    assumptions: parsed.assumptions || [],
+                },
+                { status: 200, headers: corsHeaders }
+            );
+        } else if (parsed.blocks) {
+            // Single-sprite response — existing logic
+            const validation = validateBlockJSON(parsed.blocks, context);
+            if (!validation.valid) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error: 'Generated blocks failed validation',
+                        validationErrors: validation.errors,
+                    },
+                    { status: 422, headers: corsHeaders }
+                );
+            }
+
+            return NextResponse.json(
+                {
+                    success: true,
+                    blocks: parsed.blocks,
+                    createEntities: parsed.createEntities || null,
+                    explanation: parsed.explanation || '',
+                    assumptions: parsed.assumptions || [],
+                },
+                { status: 200, headers: corsHeaders }
+            );
+        } else {
+            return NextResponse.json(
+                { success: false, error: 'AI response did not contain blocks or spriteBlocks' },
                 { status: 502, headers: corsHeaders }
             );
         }
-
-        const validation = validateBlockJSON(parsed.blocks, context);
-        if (!validation.valid) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Generated blocks failed validation',
-                    validationErrors: validation.errors,
-                },
-                { status: 422, headers: corsHeaders }
-            );
-        }
-
-        return NextResponse.json(
-            {
-                success: true,
-                blocks: parsed.blocks,
-                createEntities: parsed.createEntities || null,
-                explanation: parsed.explanation || '',
-                assumptions: parsed.assumptions || [],
-            },
-            { status: 200, headers: corsHeaders }
-        );
     } catch (error) {
         console.error('generate-blocks error:', error);
 

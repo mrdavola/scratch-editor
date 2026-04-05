@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import AIInputComponent from '../components/ai-input/ai-input.jsx';
 import {extractProjectContext} from '../lib/ai-context.js';
 import {generateBlocks} from '../lib/ai-api-client.js';
-import {injectGeneratedBlocks} from '../lib/ai-block-injector.js';
+import {injectGeneratedBlocks, injectMultiSpriteBlocks} from '../lib/ai-block-injector.js';
 import {startVoiceInput, isVoiceSupported} from '../lib/voice-input.js';
 import {
     setAILoading,
@@ -87,7 +87,9 @@ class AIInput extends React.Component {
         generateBlocks(prompt, context, this.props.conversationHistory)
             .then(result => {
                 if (result.success) {
-                    const success = injectGeneratedBlocks(this.props.vm, result);
+                    const success = result.spriteBlocks
+                        ? injectMultiSpriteBlocks(this.props.vm, result)
+                        : injectGeneratedBlocks(this.props.vm, result);
                     if (success) {
                         this.props.onSetResult(result);
                         this.props.onAddMessage({

@@ -69,6 +69,69 @@ export const injectGeneratedBlocks = (vm, generatedResult) => {
     return true;
 };
 
+export const injectMultiSpriteBlocks = (vm, generatedResult) => {
+    const {spriteBlocks, explanation} = generatedResult;
+    let allInjected = true;
+
+    for (const [spriteName, spriteData] of Object.entries(spriteBlocks)) {
+        // Find the target by name
+        const target = vm.runtime.targets.find(
+            t => t.isOriginal && t.getName() === spriteName
+        );
+
+        if (!target) {
+            console.warn(`[AI Injector] Sprite "${spriteName}" not found, skipping`);
+            allInjected = false;
+            continue;
+        }
+
+        // Create entities on this target
+        if (spriteData.createEntities) {
+            if (spriteData.createEntities.variables) {
+                for (const v of spriteData.createEntities.variables) {
+                    const existing = Object.values(target.variables)
+                        .find(e => e.name === v.name);
+                    if (!existing) {
+                        target.createVariable(generateUID(), v.name, '', false);
+                    }
+                }
+            }
+            if (spriteData.createEntities.lists) {
+                for (const l of spriteData.createEntities.lists) {
+                    const existing = Object.values(target.variables)
+                        .find(e => e.name === l.name && e.type === 'list');
+                    if (!existing) {
+                        target.createVariable(generateUID(), l.name, 'list', false);
+                    }
+                }
+            }
+        }
+
+        // Deserialize and inject blocks
+        const sb3 = require('@scratch/scratch-vm/src/serialization/sb3');
+        const blocksToInject = JSON.parse(JSON.stringify(spriteData.blocks));
+        sb3.deserializeBlocks(blocksToInject);
+
+        mapVariableIds(blocksToInject, target);
+
+        for (const blockId in blocksToInject) {
+            if (!Object.prototype.hasOwnProperty.call(blocksToInject, blockId)) continue;
+            target.blocks.createBlock(blocksToInject[blockId]);
+        }
+    }
+
+    // Update workspace
+    vm.emitWorkspaceUpdate();
+
+    vm.runtime.emit('AI_BLOCKS_INJECTED', {
+        blockIds: [],
+        topLevelIds: [],
+        explanation
+    });
+
+    return allInjected;
+};
+
 /**
  * Map variable/list names to their real VM IDs in block fields.
  */
