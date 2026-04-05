@@ -38,35 +38,38 @@ export const injectGeneratedBlocks = (vm, generatedResult) => {
     }
 
     // Step 2: Use the VM's own sb3 deserializer
-    // This handles fields, inputs, shadow blocks, and all edge cases correctly
-    const sb3 = require('@scratch/scratch-vm/src/serialization/sb3');
-    const blocksToInject = JSON.parse(JSON.stringify(blocks));
-    sb3.deserializeBlocks(blocksToInject);
+    try {
+        const sb3 = require('@scratch/scratch-vm/src/serialization/sb3');
+        const blocksToInject = JSON.parse(JSON.stringify(blocks));
+        sb3.deserializeBlocks(blocksToInject);
 
-    // Step 3: Map variable IDs to real VM IDs
-    mapVariableIds(blocksToInject, target);
+        // Step 3: Map variable IDs to real VM IDs
+        mapVariableIds(blocksToInject, target);
 
-    // Step 4: Inject all blocks (originals + deserialized shadow blocks)
-    for (const blockId in blocksToInject) {
-        if (!Object.prototype.hasOwnProperty.call(blocksToInject, blockId)) continue;
-        const block = blocksToInject[blockId];
-        target.blocks.createBlock(block);
+        // Step 4: Inject all blocks (originals + deserialized shadow blocks)
+        for (const blockId in blocksToInject) {
+            if (!Object.prototype.hasOwnProperty.call(blocksToInject, blockId)) continue;
+            target.blocks.createBlock(blocksToInject[blockId]);
+        }
+
+        // Step 5: Update workspace to render blocks
+        vm.emitWorkspaceUpdate();
+
+        // Step 6: Emit event for glow effect
+        const topLevelIds = Object.keys(blocksToInject)
+            .filter(id => blocksToInject[id].topLevel);
+
+        vm.runtime.emit('AI_BLOCKS_INJECTED', {
+            blockIds: Object.keys(blocksToInject),
+            topLevelIds,
+            explanation
+        });
+
+        return true;
+    } catch (e) {
+        console.error('[AI Injector] Failed to inject blocks:', e);
+        return false;
     }
-
-    // Step 5: Update workspace to render blocks
-    vm.emitWorkspaceUpdate();
-
-    // Step 6: Emit event for glow effect
-    const topLevelIds = Object.keys(blocksToInject)
-        .filter(id => blocksToInject[id].topLevel);
-
-    vm.runtime.emit('AI_BLOCKS_INJECTED', {
-        blockIds: Object.keys(blocksToInject),
-        topLevelIds,
-        explanation
-    });
-
-    return true;
 };
 
 export const injectMultiSpriteBlocks = (vm, generatedResult) => {
@@ -108,15 +111,20 @@ export const injectMultiSpriteBlocks = (vm, generatedResult) => {
         }
 
         // Deserialize and inject blocks
-        const sb3 = require('@scratch/scratch-vm/src/serialization/sb3');
-        const blocksToInject = JSON.parse(JSON.stringify(spriteData.blocks));
-        sb3.deserializeBlocks(blocksToInject);
+        try {
+            const sb3 = require('@scratch/scratch-vm/src/serialization/sb3');
+            const blocksToInject = JSON.parse(JSON.stringify(spriteData.blocks));
+            sb3.deserializeBlocks(blocksToInject);
 
-        mapVariableIds(blocksToInject, target);
+            mapVariableIds(blocksToInject, target);
 
-        for (const blockId in blocksToInject) {
-            if (!Object.prototype.hasOwnProperty.call(blocksToInject, blockId)) continue;
-            target.blocks.createBlock(blocksToInject[blockId]);
+            for (const blockId in blocksToInject) {
+                if (!Object.prototype.hasOwnProperty.call(blocksToInject, blockId)) continue;
+                target.blocks.createBlock(blocksToInject[blockId]);
+            }
+        } catch (e) {
+            console.error(`[AI Injector] Failed to inject blocks for "${spriteName}":`, e);
+            allInjected = false;
         }
     }
 
