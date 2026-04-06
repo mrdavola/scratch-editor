@@ -269,3 +269,29 @@
 .ai-dismiss:hover {
     color: $text-primary;
 }
+
+.ai-template-button {
+    display: flex;
+    align-items: center;
+    gap: calc($space / 2);
+    padding: calc($space / 2) $space;
+    border: none;
+    border-radius: calc($space * 2.5);
+    background-color: hsl(0, 0%, 51%);
+    color: $ui-white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    align-self: flex-end;
+    box-shadow: 0 2px 8px hsla(0, 0%, 30%, 0.3);
+}
+
+.ai-template-button svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.ai-template-button:hover {
+    background-color: hsl(0, 0%, 40%);
+}

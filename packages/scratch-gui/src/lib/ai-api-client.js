@@ -68,3 +68,7 @@ export async function debugBlocks(problemDescription, context) {
 export async function suggestRemix(context) {
     return apiCall('suggest-remix', { context });
 }
+
+export async function generateTemplate(idea) {
+    return apiCall('generate-template', { idea });
+}

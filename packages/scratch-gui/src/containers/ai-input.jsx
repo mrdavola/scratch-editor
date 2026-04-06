@@ -5,6 +5,7 @@ import VM from '@scratch/scratch-vm';
 import {connect} from 'react-redux';
 
 import AIInputComponent from '../components/ai-input/ai-input.jsx';
+import TemplatePrompt from './template-prompt.jsx';
 import {extractProjectContext} from '../lib/ai-context.js';
 import {generateBlocks} from '../lib/ai-api-client.js';
 import {injectGeneratedBlocks, injectMultiSpriteBlocks} from '../lib/ai-block-injector.js';
@@ -26,13 +27,16 @@ class AIInput extends React.Component {
             'handleMicClick',
             'handleOpen',
             'handleSubmit',
-            'handleSetInputValue'
+            'handleSetInputValue',
+            'handleOpenTemplate',
+            'handleCloseTemplate'
         ]);
         this.state = {
             inputValue: '',
             explanation: null,
             isOpen: false,
-            isListening: false
+            isListening: false,
+            templateOpen: false
         };
         this._recognition = null;
     }
@@ -68,6 +72,12 @@ class AIInput extends React.Component {
     }
     handleOpen () {
         this.setState({isOpen: true});
+    }
+    handleOpenTemplate () {
+        this.setState({templateOpen: true, isOpen: false});
+    }
+    handleCloseTemplate () {
+        this.setState({templateOpen: false});
     }
     handleSetInputValue (value) {
         this.setState({inputValue: value, isOpen: true});
@@ -116,21 +126,30 @@ class AIInput extends React.Component {
     }
     render () {
         return (
-            <AIInputComponent
-                error={this.props.error}
-                explanation={this.state.explanation}
-                inputValue={this.state.inputValue}
-                isListening={this.state.isListening}
-                isOpen={this.state.isOpen}
-                loading={this.props.loading}
-                onClose={this.handleClose}
-                onDismissExplanation={this.handleDismissExplanation}
-                onInputChange={this.handleInputChange}
-                onMicClick={this.handleMicClick}
-                onOpen={this.handleOpen}
-                onSubmit={this.handleSubmit}
-                voiceSupported={isVoiceSupported()}
-            />
+            <React.Fragment>
+                <AIInputComponent
+                    error={this.props.error}
+                    explanation={this.state.explanation}
+                    inputValue={this.state.inputValue}
+                    isListening={this.state.isListening}
+                    isOpen={this.state.isOpen}
+                    loading={this.props.loading}
+                    onClose={this.handleClose}
+                    onDismissExplanation={this.handleDismissExplanation}
+                    onInputChange={this.handleInputChange}
+                    onMicClick={this.handleMicClick}
+                    onOpen={this.handleOpen}
+                    onOpenTemplate={this.handleOpenTemplate}
+                    onSubmit={this.handleSubmit}
+                    voiceSupported={isVoiceSupported()}
+                />
+                {this.state.templateOpen ? (
+                    <TemplatePrompt
+                        vm={this.props.vm}
+                        onClose={this.handleCloseTemplate}
+                    />
+                ) : null}
+            </React.Fragment>
         );
     }
 }

@@ -42,6 +42,19 @@ const MicIcon = () => (
     </svg>
 );
 
+const TemplateIcon = () => (
+    <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <path
+            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 12h2v5H7zm4-3h2v8h-2zm4-3h2v11h-2z"
+            fill="currentColor"
+        />
+    </svg>
+);
+
 const AIInputComponent = props => {
     const {
         error,
@@ -55,6 +68,7 @@ const AIInputComponent = props => {
         onInputChange,
         onMicClick,
         onOpen,
+        onOpenTemplate,
         onSubmit,
         voiceSupported
     } = props;
@@ -99,6 +113,16 @@ const AIInputComponent = props => {
                 <div className={styles.aiError}>
                     {error}
                 </div>
+            ) : null}
+            {!loading ? (
+                <button
+                    className={styles.aiTemplateButton}
+                    onClick={onOpenTemplate}
+                    title="Start with AI - generate a complete project"
+                >
+                    <TemplateIcon />
+                    {'Start with AI'}
+                </button>
             ) : null}
             {loading ? (
                 <div className={styles.aiLoadingBar} />
@@ -180,6 +204,7 @@ AIInputComponent.propTypes = {
     onInputChange: PropTypes.func.isRequired,
     onMicClick: PropTypes.func,
     onOpen: PropTypes.func.isRequired,
+    onOpenTemplate: PropTypes.func,
     onSubmit: PropTypes.func.isRequired,
     voiceSupported: PropTypes.bool
 };
@@ -193,6 +218,7 @@ AIInputComponent.defaultProps = {
     loading: false,
     onDismissExplanation: () => {},
     onMicClick: () => {},
+    onOpenTemplate: () => {},
     voiceSupported: false
 };
 
