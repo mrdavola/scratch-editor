@@ -4,6 +4,8 @@ import { join } from 'path';
 import { getTextModel } from '../../../lib/gemini.js';
 import { validateBlockJSON } from '../../../lib/block-validator.js';
 import { checkSafety } from '../../../lib/safety.js';
+import { authenticateRequest } from '../../../lib/auth.js';
+import { checkRateLimit } from '../../../lib/rate-limit.js';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -109,6 +111,19 @@ export async function POST(request) {
             );
         }
 
+        // Auth + rate limiting
+        const { userId, tier } = await authenticateRequest(request);
+        const rateCheck = await checkRateLimit(userId, tier);
+        if (!rateCheck.allowed) {
+            const message = tier === 'anonymous'
+                ? 'You\'ve used all your free AI generations for today! Sign in for more.'
+                : 'You\'ve used all your AI generations for today. Come back tomorrow!';
+            return NextResponse.json(
+                { success: false, error: message },
+                { status: 429, headers: { ...corsHeaders, 'X-RateLimit-Remaining': '0' } }
+            );
+        }
+
         // Safety check
         const gradeLevel = context.gradeLevel || 'K-2';
         const safetyResult = await checkSafety(prompt, gradeLevel);
@@ -191,7 +206,7 @@ export async function POST(request) {
                     explanation: parsed.explanation || '',
                     assumptions: parsed.assumptions || [],
                 },
-                { status: 200, headers: corsHeaders }
+                { status: 200, headers: { ...corsHeaders, 'X-RateLimit-Remaining': String(rateCheck.remaining) } }
             );
         }
 
@@ -233,7 +248,7 @@ export async function POST(request) {
                     explanation: parsed.explanation || '',
                     assumptions: parsed.assumptions || [],
                 },
-                { status: 200, headers: corsHeaders }
+                { status: 200, headers: { ...corsHeaders, 'X-RateLimit-Remaining': String(rateCheck.remaining) } }
             );
         } else if (parsed.blocks) {
             // Single-sprite response — existing logic
@@ -257,7 +272,7 @@ export async function POST(request) {
                     explanation: parsed.explanation || '',
                     assumptions: parsed.assumptions || [],
                 },
-                { status: 200, headers: corsHeaders }
+                { status: 200, headers: { ...corsHeaders, 'X-RateLimit-Remaining': String(rateCheck.remaining) } }
             );
         } else {
             return NextResponse.json(

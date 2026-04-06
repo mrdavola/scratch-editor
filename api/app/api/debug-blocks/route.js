@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getTextModel } from '../../../lib/gemini.js';
 import { checkSafety } from '../../../lib/safety.js';
+import { authenticateRequest } from '../../../lib/auth.js';
+import { checkRateLimit } from '../../../lib/rate-limit.js';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -16,6 +18,19 @@ export async function POST(request) {
     try {
         const body = await request.json();
         const { problemDescription, context } = body;
+
+        // Auth + rate limiting
+        const { userId, tier } = await authenticateRequest(request);
+        const rateCheck = await checkRateLimit(userId, tier);
+        if (!rateCheck.allowed) {
+            const message = tier === 'anonymous'
+                ? 'You\'ve used all your free AI generations for today! Sign in for more.'
+                : 'You\'ve used all your AI generations for today. Come back tomorrow!';
+            return NextResponse.json(
+                { success: false, error: message },
+                { status: 429, headers: { ...corsHeaders, 'X-RateLimit-Remaining': '0' } }
+            );
+        }
 
         // Validate required fields
         if (!problemDescription || typeof problemDescription !== 'string' || !problemDescription.trim()) {
@@ -108,7 +123,7 @@ Respond with JSON:
                 issues: issues || [],
                 explanation: explanation || '',
             },
-            { status: 200, headers: corsHeaders }
+            { status: 200, headers: { ...corsHeaders, 'X-RateLimit-Remaining': String(rateCheck.remaining) } }
         );
     } catch (error) {
         console.error('debug-blocks error:', error);
