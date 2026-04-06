@@ -8,6 +8,16 @@ import HashParserHOC from '../lib/hash-parser-hoc.jsx';
 import log from '../lib/log.js';
 import {PLATFORM} from '../lib/platform.js';
 
+// Read auth token from URL (passed by landing site after sign-in)
+if (typeof window !== 'undefined') {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+        localStorage.setItem('scraitch-token', token);
+        window.history.replaceState({}, '', window.location.pathname);
+    }
+}
+
 const onClickLogo = () => {
     window.location = 'https://scratch-gui-beta.vercel.app';
 };

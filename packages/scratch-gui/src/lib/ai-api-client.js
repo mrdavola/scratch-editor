@@ -10,11 +10,23 @@ const API_BASE = typeof window !== 'undefined' && window.location.hostname === '
     : '';
 
 async function apiCall(endpoint, body) {
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('scraitch-token') : null;
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE}/api/${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(body),
     });
+
+    // Check rate limit header
+    const remaining = response.headers.get('X-RateLimit-Remaining');
+    if (remaining !== null && parseInt(remaining, 10) < 5) {
+        console.warn(`[ScrAItch] Rate limit warning: only ${remaining} AI generations remaining today`);
+    }
 
     const data = await response.json();
 
